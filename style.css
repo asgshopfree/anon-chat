@@ -1,0 +1,6 @@
+
+body { font-family: Arial, sans-serif; padding: 20px; }
+button { padding: 6px 12px; margin: 5px; }
+input, textarea { padding: 6px; width: 100%; margin: 5px 0; }
+.highlight { background-color: #fff6c1; }
+.chatbox { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; margin-bottom: 10px; }

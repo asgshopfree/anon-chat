@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      justify-content: space-between;
+    }
+    #header {
+      margin-bottom: 5px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 24px;
+      text-shadow: 0 0 5px rgba(0,0,0,0.5);
+    }
+    #lastSeen {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-style: italic;
+      color: #ddd;
+      text-align: center;
+    }
+    .chatbox {
+      width: 100%;
+      max-width: 600px;
+      height: 350px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      padding: 15px;
+      overflow-y: auto;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.4) transparent;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: background 0.3s ease;
+    }
+    .chatbox::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chatbox::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.4);
+      border-radius: 10px;
+    }
+    .message {
+      max-width: 75%;
+      padding: 14px 20px;
+      border-radius: 20px;
+      font-size: 15px;
+      line-height: 1.4;
+      box-shadow: 1px 3px 8px rgba(0,0,0,0.18);
+      word-wrap: break-word;
+      position: relative;
+      animation: fadeInUp 0.3s ease forwards;
+    }
+    .message.you {
+      align-self: flex-end;
+      background: #00bcd4;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .message.them {
+      align-self: flex-start;
+      background: #ffb74d;
+      color: #222;
+      border-bottom-left-radius: 4px;
+    }
+    .message .sender {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 6px;
+      opacity: 0.9;
+      user-select: none;
+    }
+    .message .time {
+  font-size: 12px;
+  color: #000;          /* black text */
+  opacity: 0.7;
+  margin-top: 6px;      /* spacing below chat text */
+  position: static;     /* remove absolute positioning */
+  text-align: right;    /* align time to the right inside bubble */
+  font-family: monospace;
+  user-select: none;
+}
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    textarea#message {
+      width: 100%;
+      max-width: 600px;
+      height: 60px;
+      border-radius: 25px;
+      border: none;
+      padding: 15px 20px;
+      font-size: 16px;
+      resize: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      outline: none;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      backdrop-filter: blur(8px);
+      transition: background 0.3s ease;
+      margin-bottom: 15px;
+    }
+    textarea#message::placeholder {
+      color: #ddd;
+    }
+    textarea#message:focus {
+      background: rgba(255,255,255,0.25);
+    }
+    button.send-btn {
+      background: #00bcd4;
+      border: none;
+      color: #000;
+      font-weight: 700;
+      padding: 14px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 188, 212, 0.6);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      font-size: 18px;
+      width: 180px;
+      align-self: center;
+      margin-bottom: 20px;
+      user-select: none;
+    }
+    button.send-btn:hover {
+      background: #0097a7;
+      box-shadow: 0 6px 20px rgba(0, 151, 167, 0.8);
+    }
+    button#getChatroomBtn {
+      background: #ff9800;
+      color: #000;
+      font-weight: 700;
+      padding: 14px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 152, 0, 0.6);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      font-size: 18px;
+      width: 220px;
+      margin: 0 auto 40px;
+      border: none;
+      user-select: none;
+    }
+    button#getChatroomBtn:hover {
+      background: #f57c00;
+      box-shadow: 0 6px 20px rgba(245, 124, 0, 0.8);
+    }
+    footer {
+      text-align: center;
+      font-size: 14px;
+      color: #ccc;
+      margin-top: auto;
+      margin-bottom: 10px;
+      user-select: none;
+    }
+    footer a {
+      color: #00bcd4;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h2 id="header">Chat with ...</h2>
+  <p id="lastSeen">Last seen: loading...</p>
+  <div class="chatbox" id="chatBox"></div>
+  <textarea id="message" placeholder="Type your message..."></textarea>
+  <button class="send-btn" onclick="sendMessage()">Send</button>
+  <button id="getChatroomBtn" onclick="window.location.href='index.html'">Get your own chatroom</button>
+
+  <footer>
+    Developed by Mahiur Rahman.  
+    <a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer">About Me</a>
+  </footer>
+
+  <script>
+    let targetUser = "";
+    let chatRef = null;
+
+    window.onload = function () {
+      const params = new URLSearchParams(location.search);
+      targetUser = params.get("user") || "testuser"; // default for local testing
+
+      if (!targetUser) {
+        document.body.innerHTML = "<h3 style='color:#fff; text-align:center; margin-top:50px;'>Invalid chat link. No user specified.</h3>";
+        return;
+      }
+
+      document.getElementById("header").textContent = "Chat with " + targetUser;
+
+      let deviceId = localStorage.getItem("deviceId");
+      if (!deviceId) {
+        deviceId = "device_" + Math.random().toString(36).substring(2);
+        localStorage.setItem("deviceId", deviceId);
+      }
+
+      chatRef = firebase.database().ref("chats/" + targetUser + "/" + deviceId + "/messages");
+      const seenRef = firebase.database().ref("chats/" + targetUser + "/" + deviceId + "/seen");
+      seenRef.set(false);
+
+      chatRef.on("child_added", snap => {
+        const msg = snap.val();
+        const chatBox = document.getElementById("chatBox");
+        if (!chatBox) return;
+
+        const div = document.createElement("div");
+        div.classList.add("message");
+
+        if (msg.from === "Anonymous" || msg.from === deviceId) {
+          div.classList.add("you");
+          div.innerHTML = `
+            <div class="sender">You</div>
+            <div>${escapeHTML(msg.text)}</div>
+            <div class="time">${msg.time}</div>
+          `;
+        } else {
+          div.classList.add("them");
+          div.innerHTML = `
+            <div class="sender">${targetUser}</div>
+            <div>${escapeHTML(msg.text)}</div>
+            <div class="time">${msg.time}</div>
+          `;
+        }
+
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        if (document.hidden && Notification.permission === "granted" && msg.from !== "Anonymous" && msg.from !== deviceId) {
+          new Notification(`New reply from ${msg.from}`, { body: msg.text });
+        }
+      });
+
+      firebase.database().ref("users/" + targetUser + "/lastSeen").on("value", snap => {
+        const val = snap.val();
+        if (!val) return;
+        const lastSeenTime = new Date(val);
+        const diff = Date.now() - lastSeenTime.getTime();
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        let status = "";
+        if (minutes < 1) status = "Active now";
+        else if (hours < 1) status = `Active ${minutes} min ago`;
+        else status = `Active ${hours} hr ago`;
+        document.getElementById("lastSeen").textContent = "Last seen: " + status;
+      });
+
+      if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+    };
+
+    function sendMessage() {
+      const textEl = document.getElementById("message");
+      const text = textEl.value.trim();
+      if (!text || !chatRef) return;
+      const now = new Date().toLocaleString();
+
+      chatRef.push({
+        from: "Anonymous",
+        text: text,
+        time: now
+      });
+      textEl.value = "";
+    }
+
+    function escapeHTML(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://anon-chat.netlify.app/sitemap.xml

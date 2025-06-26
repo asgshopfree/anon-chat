@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .signup-box {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 350px;
+      text-align: center;
+      color: #fff;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.3);
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    input::placeholder {
+      color: #eee;
+    }
+
+    input:focus {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: #00c853;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #00b44b;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 400px) {
+      .signup-box {
+        padding: 25px 20px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      input, button {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="signup-box">
+    <h2>Create an Account</h2>
+    <input type="text" id="username" placeholder="Choose a username" />
+    <input type="password" id="password" placeholder="Choose a password" />
+    <button onclick="signUp()">Sign Up</button>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    function isValidUsername(username) {
+      return /^[a-z0-9_]+$/.test(username);
+    }
+
+    function isValidPassword(password) {
+      return /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/.test(password);
+    }
+
+    function signUp() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const status = document.getElementById("status");
+
+      if (!username || !password) return alert("All fields are required");
+
+      if (!isValidUsername(username)) {
+        status.textContent = "❌ Username must be lowercase letters, numbers, or underscores.";
+        return;
+      }
+
+      if (!isValidPassword(password)) {
+        status.textContent = "❌ Password must be at least 6 characters and include letters & numbers.";
+        return;
+      }
+
+      const userRef = firebase.database().ref("users/" + username);
+      userRef.once("value").then(snapshot => {
+        if (snapshot.exists()) {
+          status.textContent = "❌ Username already taken.";
+        } else {
+          const now = new Date().toISOString();
+          userRef.set({ password, lastSeen: now }).then(() => {
+            status.textContent = "✅ Account created. Redirecting...";
+            localStorage.setItem("loggedInUser", username);
+            setTimeout(() => window.location.href = "dashboard.html", 1500);
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>
