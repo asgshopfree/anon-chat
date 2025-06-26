@@ -211,7 +211,7 @@
 
     window.onload = function () {
       const params = new URLSearchParams(location.search);
-      targetUser = params.get("user") || "testuser"; // default for local testing
+      targetUser = params.get("user") ; // default for local testing
 
       if (!targetUser) {
         document.body.innerHTML = "<h3 style='color:#fff; text-align:center; margin-top:50px;'>Invalid chat link. No user specified.</h3>";
