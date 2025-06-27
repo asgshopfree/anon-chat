@@ -233,5 +233,11 @@
     Developed by Mahiur Rahman.  
     <a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer">About Me</a>
   </footer>
+  <script>
+  // Auto-redirect if user is already logged in
+  if (localStorage.getItem("loggedInUser")) {
+    window.location.href = "dashboard.html";
+  }
+  </script>
 </body>
 </html>
