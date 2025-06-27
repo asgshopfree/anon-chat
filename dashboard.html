@@ -289,7 +289,7 @@
     <div class="chatbox" id="chatBox" style="background: rgba(255, 255, 255, 0.2); padding: 10px; border-radius: 10px; height: 200px; overflow-y: auto; margin-bottom: 10px; display:flex; flex-direction: column;"></div>
     <div style="display: flex; gap: 10px;">
       <textarea id="replyBox" placeholder="Reply..." style="flex: 1; padding: 10px; border-radius: 8px; border: none;"></textarea>
-      <button onclick="sendReply()" style="background: #00bcd4; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Send</button>
+      <button onclick="sendReplyGlobal()" style="background: #00bcd4; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Send</button>
     </div>
   </div>
 </div>
@@ -506,7 +506,7 @@ function sendReply(deviceId) {
     activeChat = "";
   }
 
-  function sendReply() {
+  function sendReplyGlobal() {
     const msg = document.getElementById("replyBox").value.trim();
     if (!msg || !activeChat) return;
     const now = new Date().toLocaleString();
