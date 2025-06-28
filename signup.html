@@ -133,36 +133,47 @@
     }
 
     function signUp() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const status = document.getElementById("status");
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const status = document.getElementById("status");
 
-      if (!username || !password) return alert("All fields are required");
+  if (!username || !password) {
+    alert("All fields are required");
+    return;
+  }
 
-      if (!isValidUsername(username)) {
-        status.textContent = "❌ Username must be lowercase letters, numbers, or underscores.";
-        return;
-      }
+  if (!isValidUsername(username)) {
+    status.textContent = "❌ Username must be lowercase letters, numbers, or underscores.";
+    return;
+  }
 
-      if (!isValidPassword(password)) {
-        status.textContent = "❌ Password must be at least 6 characters and include letters & numbers.";
-        return;
-      }
+  if (!isValidPassword(password)) {
+    status.textContent = "❌ Password must be at least 6 characters and include letters & numbers.";
+    return;
+  }
 
-      const userRef = firebase.database().ref("users/" + username);
-      userRef.once("value").then(snapshot => {
-        if (snapshot.exists()) {
-          status.textContent = "❌ Username already taken.";
-        } else {
-          const now = new Date().toISOString();
-          userRef.set({ password, lastSeen: now }).then(() => {
-            status.textContent = "✅ Account created. Redirecting...";
-            localStorage.setItem("loggedInUser", username);
-            setTimeout(() => window.location.href = "dashboard.html", 1500);
-          });
-        }
+  const userRef = firebase.database().ref("users/" + username);
+
+  // চেক করো ইউজার আগেই আছে কি না
+  userRef.once("value").then(snapshot => {
+    if (snapshot.exists()) {
+      status.textContent = "❌ Username already taken.";
+    } else {
+      const now = new Date().toISOString();
+      // ইউজার তৈরি করো
+      userRef.set({ password, lastSeen: now }).then(() => {
+        status.textContent = "✅ Account created. Redirecting...";
+        localStorage.setItem("loggedInUser", username);
+        setTimeout(() => window.location.href = "dashboard.html", 1500);
+      }).catch((err) => {
+        status.textContent = "❌ Error creating account: " + err.message;
       });
     }
+  }).catch((err) => {
+    status.textContent = "❌ Error checking username: " + err.message;
+  });
+}
+
   </script>
 </body>
 </html>
