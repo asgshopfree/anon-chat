@@ -10,7 +10,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="firebase-config.js"></script>
   <style>
-    /* Combined styling */
     * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -153,12 +152,10 @@
         document.getElementById("lastSeen").textContent = "Last seen: " + status;
       });
 
-      if (Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
-
-      if (Notification.permission === 'granted') {
+      if (Notification.permission === 'granted' && localStorage.getItem("notifEnabled") === "true") {
         document.getElementById("notifToggleBtn").textContent = "🔕 Disable Notifications";
+      } else {
+        document.getElementById("notifToggleBtn").textContent = "🔔 Enable Notifications";
       }
     };
 
@@ -183,17 +180,29 @@
       firebase.database().ref("tokens/" + user).set(token);
     }
 
+    function removeTokenFromDatabase() {
+      const user = new URLSearchParams(location.search).get("user");
+      if (!user) return;
+      firebase.database().ref("tokens/" + user).remove();
+    }
+
     function toggleNotifications() {
-      if (Notification.permission === "granted") {
-        alert("Notification already allowed.");
+      if (localStorage.getItem("notifEnabled") === "true") {
+        localStorage.setItem("notifEnabled", "false");
+        removeTokenFromDatabase();
+        document.getElementById("notifToggleBtn").textContent = "🔔 Enable Notifications";
+        alert("🔕 Notifications disabled.");
       } else {
         Notification.requestPermission().then(permission => {
           if (permission === "granted") {
-            messaging.getToken({ vapidKey: 'BOa3k5chES3HKrSL8mPdaorhf_TEiTSruz_rXCFBeZxAGjUyKTIwAWmLi39RTyZPxSPo_nAGGCqSqMFiF68EnU0' }).then(currentToken => {
+            messaging.getToken({
+              vapidKey: 'BOa3k5chES3HKrSL8mPdaorhf_TEiTSruz_rXCFBeZxAGjUyKTIwAWmLi39RTyZPxSPo_nAGGCqSqMFiF68EnU0'
+            }).then(currentToken => {
               if (currentToken) {
                 saveTokenToDatabase(currentToken);
+                localStorage.setItem("notifEnabled", "true");
                 document.getElementById("notifToggleBtn").textContent = "🔕 Disable Notifications";
-                alert("✅ Notifications enabled!");
+                alert("🔔 Notifications enabled!");
               } else {
                 alert("⚠️ Failed to get token.");
               }
@@ -206,4 +215,4 @@
     }
   </script>
 </body>
-    </html>
+</html>
