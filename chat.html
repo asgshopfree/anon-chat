@@ -166,6 +166,11 @@
       const now = new Date().toLocaleString();
       chatRef.push({ from: "Anonymous", text: text, time: now });
       textEl.value = "";
+      firebase.database().ref("notifications").push({
+  to: targetUser, // admin username
+  message: text,
+  time: now
+});
     }
 
     function escapeHTML(text) {
@@ -213,6 +218,16 @@
         });
       }
     }
+    firebase.database().ref("notifications").on("child_added", snap => {
+  const data = snap.val();
+  const deviceId = localStorage.getItem("deviceId");
+
+  if (data.to === deviceId && Notification.permission === "granted") {
+    new Notification("Reply from Admin", {
+      body: data.message
+    });
+  }
+});
   </script>
 </body>
 </html>
