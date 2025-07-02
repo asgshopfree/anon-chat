@@ -469,7 +469,11 @@ function sendReply(deviceId) {
     text: msg,
     time: now
   });
-  input.value = "";
+  input.value = "";firebase.database().ref("notifications").push({
+  to: deviceId, // anonymous user's device ID
+  message: text,
+  time: now
+});
   }
   function deleteChat(id) {
     if (confirm("Delete this chat?")) {
@@ -518,6 +522,11 @@ function sendReply(deviceId) {
       time: now
     });
     document.getElementById("replyBox").value = "";
+    firebase.database().ref("notifications").push({
+  to: deviceId, // anonymous user's device ID
+  message: text,
+  time: now
+});
   }
 
   // Change username function
@@ -725,6 +734,16 @@ function sendReply(deviceId) {
 
   // Update label when page loads
   window.addEventListener("load", updateNotifButton);
+  firebase.database().ref("notifications").on("child_added", snap => {
+  const data = snap.val();
+  const currentUser = localStorage.getItem("loggedInUser");
+
+  if (data.to === currentUser && Notification.permission === "granted") {
+    new Notification("New Message", {
+      body: data.message
+    });
+  }
+});
 </script>
 
 </body>
