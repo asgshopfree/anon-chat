@@ -654,15 +654,21 @@ function sendReply(deviceId) {
 </footer>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+
 <script>
   const messaging = firebase.messaging();
   const user = localStorage.getItem("loggedInUser");
 
+  // Ensure service worker is registered first
+  let swRegistration = null;
   navigator.serviceWorker.register('firebase-messaging-sw.js')
     .then(reg => {
-      messaging.useServiceWorker(reg);
+      swRegistration = reg;
+      messaging.useServiceWorker(swRegistration);
+      updateNotifButton(); // update label on load
     });
 
+  // Save/remove token from Firebase
   function saveTokenToDatabase(token) {
     if (!user) return;
     firebase.database().ref("tokens/" + user).set(token);
@@ -673,26 +679,33 @@ function sendReply(deviceId) {
     firebase.database().ref("tokens/" + user).remove();
   }
 
+  // Toggle notification handler
   function toggleNotifications() {
+    const btn = document.getElementById("notifToggleBtn");
+
     if (localStorage.getItem("notifEnabled") === "true") {
       localStorage.setItem("notifEnabled", "false");
       removeTokenFromDatabase();
-      document.getElementById("notifToggleBtn").textContent = "🔔 Enable Notifications";
+      btn.textContent = "🔔 Enable Notifications";
       alert("🔕 Notifications disabled.");
     } else {
       Notification.requestPermission().then(permission => {
         if (permission === "granted") {
           messaging.getToken({
-            vapidKey: 'BOa3k5chES3HKrSL8mPdaorhf_TEiTSruz_rXCFBeZxAGjUyKTIwAWmLi39RTyZPxSPo_nAGGCqSqMFiF68EnU0'
+            vapidKey: 'BOa3k5chES3HKrSL8mPdaorhf_TEiTSruz_rXCFBeZxAGjUyKTIwAWmLi39RTyZPxSPo_nAGGCqSqMFiF68EnU0',
+            serviceWorkerRegistration: swRegistration
           }).then(currentToken => {
             if (currentToken) {
               saveTokenToDatabase(currentToken);
               localStorage.setItem("notifEnabled", "true");
-              document.getElementById("notifToggleBtn").textContent = "🔕 Disable Notifications";
+              btn.textContent = "🔕 Disable Notifications";
               alert("🔔 Notifications enabled!");
             } else {
-              alert("⚠️ Failed to get token.");
+              alert("⚠️ Failed to get FCM token.");
             }
+          }).catch(err => {
+            console.error("Token error:", err);
+            alert("❌ Error getting token.");
           });
         } else {
           alert("❌ Notification permission denied.");
@@ -701,13 +714,17 @@ function sendReply(deviceId) {
     }
   }
 
-  window.addEventListener('load', () => {
-    if (Notification.permission === 'granted' && localStorage.getItem("notifEnabled") === "true") {
-      document.getElementById("notifToggleBtn").textContent = "🔕 Disable Notifications";
+  function updateNotifButton() {
+    const btn = document.getElementById("notifToggleBtn");
+    if (Notification.permission === "granted" && localStorage.getItem("notifEnabled") === "true") {
+      btn.textContent = "🔕 Disable Notifications";
     } else {
-      document.getElementById("notifToggleBtn").textContent = "🔔 Enable Notifications";
+      btn.textContent = "🔔 Enable Notifications";
     }
-  });
+  }
+
+  // Update label when page loads
+  window.addEventListener("load", updateNotifButton);
 </script>
 
 </body>
