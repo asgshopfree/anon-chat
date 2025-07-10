@@ -8,22 +8,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
-  <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="firebase-config.js"></script>
-<!-- OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
-<script>
-window.OneSignal = window.OneSignal || [];
-OneSignal.push(function() {
-    OneSignal.init({
-        appId: "YOUR_ONESIGNAL_APP_ID", // Replace here
-        notifyButton: { enable: true },
-        allowLocalhostAsSecureOrigin: true
-    });
-});
-</script>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -485,8 +469,7 @@ function sendReply(deviceId) {
     text: msg,
     time: now
   });
-  input.value = "";
-  firebase.database().ref("notifications").push({
+  input.value = "";firebase.database().ref("notifications").push({
   to: deviceId, // anonymous user's device ID
   message: text,
   time: now
@@ -539,6 +522,11 @@ function sendReply(deviceId) {
       time: now
     });
     document.getElementById("replyBox").value = "";
+    firebase.database().ref("notifications").push({
+  to: deviceId, // anonymous user's device ID
+  message: text,
+  time: now
+});
   }
 
   // Change username function
@@ -701,7 +689,6 @@ function sendReply(deviceId) {
   }
 
   // Toggle notification handler
-  
   function toggleNotifications() {
     const btn = document.getElementById("notifToggleBtn");
 
@@ -744,7 +731,10 @@ function sendReply(deviceId) {
       btn.textContent = "🔔 Enable Notifications";
     }
   }
-firebase.database().ref("notifications").on("child_added", snap => {
+
+  // Update label when page loads
+  window.addEventListener("load", updateNotifButton);
+  firebase.database().ref("notifications").on("child_added", snap => {
   const data = snap.val();
   const currentUser = localStorage.getItem("loggedInUser");
 
@@ -754,9 +744,7 @@ firebase.database().ref("notifications").on("child_added", snap => {
     });
   }
 });
-  // Update label when page loads
-  window.addEventListener("load", updateNotifButton);
 </script>
 
 </body>
-      </html>
+  </html>
