@@ -115,13 +115,17 @@
   </style>
 </head>
 <body>
-  <div class="signup-box">
-    <h2>Create an Account</h2>
-    <input type="text" id="username" placeholder="Choose a username" />
-    <input type="password" id="password" placeholder="Choose a password" />
-    <button onclick="signUp()">Sign Up</button>
-    <p id="status"></p>
-  </div>
+   <div class="signup-box">
+  <h2>Create an Account</h2>
+  <input type="text" id="username" placeholder="Choose a username" />
+  <input type="password" id="password" placeholder="Choose a password" />
+  <button onclick="signUp()">Sign Up</button>
+  <p id="status"></p>
+  <p style="margin-top: 15px; font-size: 14px;">
+    Already have an account? 
+    <a href="login.html" style="color: #00e676; text-decoration: underline;">Login</a>
+  </p>
+</div>
 
   <script>
     function isValidUsername(username) {
