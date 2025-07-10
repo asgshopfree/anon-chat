@@ -1,7 +1,7 @@
 {
   "name": "Anonymous Chatroom",
   "short_name": "Chatroom",
-  "start_url": "https://anon-chatroom.netlify.app/",
+  "start_url": "/.dashboard.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#764ba2",
