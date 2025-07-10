@@ -306,19 +306,7 @@
     Sign Out
   </button>
 </div>
-<div id="installContainer" style="text-align: center; margin-top: 20px;">
-  <button id="installBtn" aria-label="Install App">📥 Install App</button>
-  
-  <div id="installInstructions" style="display:none;" class="glass-box">
-    <h4>📲 How to Install This App</h4>
-    <ol>
-      <li>Tap the <b>⋮</b> (3-dot menu) in the top-right corner of your browser.</li>
-      <li>Select <b>"Add to Home screen"</b>.</li>
-      <li>Confirm by tapping <b>"Add"</b> when prompted.</li>
-    </ol>
-    <p style="font-size: 14px; color: #ccc;">✅ You’ll get an app icon on your home screen!</p>
-  </div>
-</div>
+
 <div class="tab-buttons">
   <button class="active" onclick="showTab('link', this)">Your Link</button>
   <button id="messagesBtn" onclick="showTab('messages', this)">Messages <span class="badge" id="notifBadge" style="display:none;">0</span></button>
@@ -826,17 +814,33 @@
   }
 });
 
-
-  const installBtn = document.getElementById('installBtn');
-  const installInstructions = document.getElementById('installInstructions');
-
-  installBtn.addEventListener('click', () => {
-    installInstructions.style.display = 'block';
-    installBtn.disabled = true;
-    installBtn.innerText = '📦 Installation Guide';
+      </script>
+<div id="installContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+  <button id="installBtn">📥 Install App</button>
+  <div id="installInstructions" style="display:none;" class="glass-box">
+    <h4>📲 How to Install This App</h4>
+    <ol>
+      <li>Tap the <b>⋮</b> (3-dot menu) in the top-right corner of your browser.</li>
+      <li>Tap <b>"Add to Home screen"</b>.</li>
+      <li>Confirm by tapping <b>"Add"</b>.</li>
+    </ol>
+    <p style="font-size: 14px; color: #ccc;">✅ You’ll get an app icon on your home screen!</p>
+  </div>
+</div>
+  <script>
+  document.getElementById('installBtn').addEventListener('click', () => {
+    const inst = document.getElementById('installInstructions');
+    inst.style.display = inst.style.display === 'none' ? 'block' : 'none';
   });
-</script>
 
+  // Optionally hide in PWA
+  window.addEventListener('load', () => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isStandalone) {
+      document.getElementById('installContainer').style.display = 'none';
+    }
+  });
+  </script>
 
 </body>
   </html>
