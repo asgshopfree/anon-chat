@@ -1,4 +1,4 @@
-const CACHE_NAME = "chatroom-v4"; // update version here when needed
+const CACHE_NAME = "chatroom-v5"; // bump version to bust old cache
 
 const FILES_TO_PRECACHE = [
   "/",
@@ -13,48 +13,40 @@ const FILES_TO_PRECACHE = [
   "/icon-512.png"
 ];
 
-// Install: cache essential files immediately
 self.addEventListener("install", (event) => {
-  console.log("🔧 Service Worker Installing...");
+  console.log("SW installing...");
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(FILES_TO_PRECACHE);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_PRECACHE))
   );
 });
 
-// Activate: remove old cache versions and take control
 self.addEventListener("activate", (event) => {
-  console.log("🚀 Service Worker Activating...");
+  console.log("SW activating...");
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      )
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-// Fetch: Network First Strategy
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // Update the cache in background
         return caches.open(CACHE_NAME).then(cache => {
           cache.put(event.request, response.clone());
           return response;
         });
       })
-      .catch(() => caches.match(event.request)) // fallback to cache if offline
+      .catch(() => caches.match(event.request))
   );
 });
 
-// Allow skipWaiting() via postMessage
+// Allow skipWaiting via postMessage
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.action === "skipWaiting") {
+  if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });
