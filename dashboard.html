@@ -371,29 +371,63 @@
  
   document.getElementById("welcome").textContent = "Welcome, " + user;
   document.getElementById("shareLink").value = location.origin + "/chat.html?user=" + user;
-
-  if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js').then(registration => {
-    console.log("✅ SW registered:", registration);
+    console.log("✅ SW registered");
 
-    // Auto-check every 30s
-    setInterval(() => registration.update(), 30000);
-
-    registration.addEventListener("updatefound", () => {
+    registration.onupdatefound = () => {
       const newWorker = registration.installing;
-      newWorker.addEventListener("statechange", () => {
+      newWorker.onstatechange = () => {
         if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-          newWorker.postMessage({ action: "skipWaiting" });
+          showUpdateBanner(); // prompt user to refresh
         }
-      });
-    });
+      };
+    };
+  });
 
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      console.log("🔄 Reloading due to new SW");
-      window.location.reload();
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    console.log("SW controller changed");
+  });
+}
+
+// Show update banner
+function showUpdateBanner() {
+  const banner = document.createElement("div");
+  banner.innerHTML = `
+    <div style="
+      position: fixed;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff9800;
+      color: black;
+      padding: 12px 24px;
+      border-radius: 30px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 10000;
+      font-weight: bold;
+    ">
+      🔄 New version available. 
+      <button id="refreshNow" style="
+        margin-left: 10px;
+        background: #000;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+      ">Refresh Now</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+  document.getElementById("refreshNow").onclick = () => {
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: "SKIP_WAITING" });
+      }
     });
-  }).catch(console.error);
-  }
+  };
+    }
   // Tabs
   function showTab(tabId, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
