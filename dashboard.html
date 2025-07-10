@@ -320,7 +320,6 @@
     <p id="statusPassword" style="color:#fff;"></p>
   </div>
 </div>
-
 <script>
   const user = localStorage.getItem("loggedInUser");
   if (!user) window.location.href = "login.html";
@@ -404,7 +403,15 @@
       const container = document.createElement("div");
       container.className = !seen ? "unseen" : "";
       container.innerHTML = `
-  <strong style="display:block;font-size:16px;">${deviceId}</strong>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <strong style="font-size:16px;">${deviceId}</strong>
+    <div style="position: relative;">
+      <button onclick="toggleMenu(this)" style="background: none; border: none; font-size: 20px; color: white; cursor: pointer;">⋮</button>
+      <div class="menu" style="display: none; position: absolute; right: 0; background: #333; border-radius: 6px; padding: 5px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.3); z-index: 999;">
+        <button onclick="deleteChat('${deviceId}')" style="background: none; border: none; color: red; padding: 8px 16px; cursor: pointer; width: 100%; text-align: left;">🗑️ Delete</button>
+      </div>
+    </div>
+  </div>
   <button onclick="toggleChat('${deviceId}')" style="margin-top:8px;background:#4caf50;color:white;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;">Open</button>
   
   <div id="chat-${deviceId}" class="inline-chatbox" style="display:none; margin-top:10px;">
@@ -438,43 +445,45 @@
   }
 
   function toggleChat(deviceId) {
-  document.querySelectorAll('.inline-chatbox').forEach(c => c.style.display = "none"); // hide all
-  const thisChat = document.getElementById(`chat-${deviceId}`);
-  thisChat.style.display = "block";
+    document.querySelectorAll('.inline-chatbox').forEach(c => c.style.display = "none"); // hide all
+    const thisChat = document.getElementById(`chat-${deviceId}`);
+    thisChat.style.display = "block";
 
-  const chatBox = document.getElementById(`chatBox-${deviceId}`);
-  chatBox.innerHTML = "";
+    const chatBox = document.getElementById(`chatBox-${deviceId}`);
+    chatBox.innerHTML = "";
 
-  const msgRef = firebase.database().ref(`chats/${user}/${deviceId}/messages`);
-  msgRef.off();
-  msgRef.on("child_added", snap => {
-    const msg = snap.val();
-    const div = document.createElement("div");
-    div.style = `background:${msg.from === user ? '#b2ebf2' : '#ffe082'};margin:5px;padding:10px;border-radius:10px;color:#000;`;
-    div.innerHTML = `<strong>${msg.from}</strong> (${msg.time}): <br>${msg.text}`;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  });
+    const msgRef = firebase.database().ref(`chats/${user}/${deviceId}/messages`);
+    msgRef.off();
+    msgRef.on("child_added", snap => {
+      const msg = snap.val();
+      const div = document.createElement("div");
+      div.style = `background:${msg.from === user ? '#b2ebf2' : '#ffe082'};margin:5px;padding:10px;border-radius:10px;color:#000;`;
+      div.innerHTML = `<strong>${msg.from}</strong> (${msg.time}): <br>${msg.text}`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
 
-  firebase.database().ref(`chats/${user}/${deviceId}/seen`).set(true);
-}
-
-function sendReply(deviceId) {
-  const input = document.getElementById(`replyBox-${deviceId}`);
-  const msg = input.value.trim();
-  if (!msg) return;
-  const now = new Date().toLocaleString();
-  firebase.database().ref(`chats/${user}/${deviceId}/messages`).push({
-    from: user,
-    text: msg,
-    time: now
-  });
-  input.value = "";firebase.database().ref("notifications").push({
-  to: deviceId, // anonymous user's device ID
-  message: text,
-  time: now
-});
+    firebase.database().ref(`chats/${user}/${deviceId}/seen`).set(true);
   }
+
+  function sendReply(deviceId) {
+    const input = document.getElementById(`replyBox-${deviceId}`);
+    const msg = input.value.trim();
+    if (!msg) return;
+    const now = new Date().toLocaleString();
+    firebase.database().ref(`chats/${user}/${deviceId}/messages`).push({
+      from: user,
+      text: msg,
+      time: now
+    });
+    input.value = "";
+    firebase.database().ref("notifications").push({
+      to: deviceId, // anonymous user's device ID
+      message: msg,
+      time: now
+    });
+  }
+
   function deleteChat(id) {
     if (confirm("Delete this chat?")) {
       firebase.database().ref("chats/" + user + "/" + id).remove();
@@ -523,10 +532,10 @@ function sendReply(deviceId) {
     });
     document.getElementById("replyBox").value = "";
     firebase.database().ref("notifications").push({
-  to: deviceId, // anonymous user's device ID
-  message: text,
-  time: now
-});
+      to: activeChat, // anonymous user's device ID
+      message: msg,
+      time: now
+    });
   }
 
   // Change username function
@@ -633,6 +642,7 @@ function sendReply(deviceId) {
     }
   });
 </script>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 <script>
   const messaging = firebase.messaging();
