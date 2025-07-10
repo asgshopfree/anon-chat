@@ -4,16 +4,12 @@
   <meta charset="UTF-8" />
   <title>Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="styleshesendet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="firebase-config.js"></script>
-
-  <!-- OneSignal SDK -->
-  <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async></script>
-
   <style>
-    /* Your existing CSS unchanged */
     * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -93,194 +89,145 @@
     <a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer">About Me</a>
   </footer>
 
-<script>
-  let targetUser = "";
-  let chatRef = null;
-  let deviceId = "";
-  let oneSignalUserId = null;
+  <script>
+    let targetUser = "";
+    let chatRef = null;
+    let deviceId = "";
+    const messaging = firebase.messaging();
 
-  window.onload = function () {
-    // Get user from URL
-    const params = new URLSearchParams(location.search);
-    targetUser = params.get("user");
-    if (!targetUser) {
-      document.body.innerHTML = "<h3 style='color:#fff; text-align:center; margin-top:50px;'>Invalid chat link. No user specified.</h3>";
-      return;
-    }
-    document.getElementById("header").textContent = "Chat with " + targetUser;
+    window.onload = function () {
+      const params = new URLSearchParams(location.search);
+      targetUser = params.get("user");
+      if (!targetUser) {
+        document.body.innerHTML = "<h3 style='color:#fff; text-align:center; margin-top:50px;'>Invalid chat link. No user specified.</h3>";
+        return;
+      }
+      document.getElementById("header").textContent = "Chat with " + targetUser;
 
-    // Get or generate deviceId
-    deviceId = localStorage.getItem("deviceId");
-    if (!deviceId) {
-      deviceId = "device_" + Math.random().toString(36).substring(2);
-      localStorage.setItem("deviceId", deviceId);
-    }
-
-    // Setup Firebase Refs
-    chatRef = firebase.database().ref("chats/" + targetUser + "/" + deviceId + "/messages");
-    const seenRef = firebase.database().ref("chats/" + targetUser + "/" + deviceId + "/seen");
-    seenRef.set(false);
-
-    // Listen for new chat messages
-    chatRef.on("child_added", snap => {
-      const msg = snap.val();
-      const chatBox = document.getElementById("chatBox");
-      if (!chatBox) return;
-
-      const div = document.createElement("div");
-      div.classList.add("message");
-
-      if (msg.from === "Anonymous" || msg.from === deviceId) {
-        div.classList.add("you");
-        div.innerHTML = `<div class="sender">You</div><div>${escapeHTML(msg.text)}</div><div class="time">${msg.time}</div>`;
-      } else {
-        div.classList.add("them");
-        div.innerHTML = `<div class="sender">${targetUser}</div><div>${escapeHTML(msg.text)}</div><div class="time">${msg.time}</div>`;
+      deviceId = localStorage.getItem("deviceId");
+      if (!deviceId) {
+        deviceId = "device_" + Math.random().toString(36).substring(2);
+        localStorage.setItem("deviceId", deviceId);
       }
 
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
+      chatRef = firebase.database().ref("chats/" + targetUser + "/" + deviceId + "/messages");
+      const seenRef = firebase.database().ref("chats/" + targetUser + "/" + deviceId + "/seen");
+      seenRef.set(false);
 
-    // Last seen status
-    firebase.database().ref("users/" + targetUser + "/lastSeen").on("value", snap => {
-      const val = snap.val();
-      if (!val) return;
-      const lastSeenTime = new Date(val);
-      const diff = Date.now() - lastSeenTime.getTime();
-      const minutes = Math.floor(diff / 60000);
-      const hours = Math.floor(minutes / 60);
-      let status = "";
-      if (minutes < 1) status = "Active now";
-      else if (hours < 1) status = `Active ${minutes} min ago`;
-      else status = `Active ${hours} hr ago`;
-      document.getElementById("lastSeen").textContent = "Last seen: " + status;
-    });
+      chatRef.on("child_added", snap => {
+        const msg = snap.val();
+        const chatBox = document.getElementById("chatBox");
+        if (!chatBox) return;
 
-    // Initialize OneSignal
-    initOneSignal();
-  };
+        const div = document.createElement("div");
+        div.classList.add("message");
 
-  function sendMessage() {
-    const textEl = document.getElementById("message");
-    const text = textEl.value.trim();
-    if (!text || !chatRef) return;
-    const now = new Date().toLocaleString();
-    chatRef.push({ from: "Anonymous", text: text, time: now });
-    textEl.value = "";
-    // Notify admin in Firebase about new message (optional)
-    firebase.database().ref("notifications").push({
-      to: targetUser,
-      message: text,
-      time: now
-    });
-  }
-
-  function escapeHTML(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Initialize OneSignal and set up handlers
-  function initOneSignal() {
-    const OneSignal = window.OneSignal || [];
-    OneSignal.push(() => {
-      OneSignal.init({
-        appId: "f98df9ef-721d-4a74-a411-b090c26b4d86", // <-- Replace with your OneSignal App ID
-        notifyButton: {
-          enable: false, // We use our own button
-        },
-        welcomeNotification: {
-          disable: true,
-        },
-        allowLocalhostAsSecureOrigin: true,
-        // Set a custom path for your service worker if needed
-        serviceWorkerPath: 'OneSignalSDKWorker.js',
-      });
-
-      // Check if user already enabled notifications
-      OneSignal.isPushNotificationsEnabled().then(function(isEnabled) {
-        updateNotifButton(isEnabled);
-
-        if (isEnabled) {
-          OneSignal.getUserId().then(function(userId) {
-            if (userId) {
-              oneSignalUserId = userId;
-              saveOneSignalIdToFirebase(userId);
-            }
-          });
-        }
-      });
-
-      // Listen for subscription changes
-      OneSignal.on('subscriptionChange', function(isSubscribed) {
-        updateNotifButton(isSubscribed);
-        if (isSubscribed) {
-          OneSignal.getUserId().then(function(userId) {
-            oneSignalUserId = userId;
-            saveOneSignalIdToFirebase(userId);
-          });
+        if (msg.from === "Anonymous" || msg.from === deviceId) {
+          div.classList.add("you");
+          div.innerHTML = `<div class="sender">You</div><div>${escapeHTML(msg.text)}</div><div class="time">${msg.time}</div>`;
         } else {
-          removeOneSignalIdFromFirebase();
-          oneSignalUserId = null;
+          div.classList.add("them");
+          div.innerHTML = `<div class="sender">${targetUser}</div><div>${escapeHTML(msg.text)}</div><div class="time">${msg.time}</div>`;
+        }
+
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        if (document.hidden && Notification.permission === "granted" && msg.from !== "Anonymous" && msg.from !== deviceId) {
+          new Notification("New reply from Chatroom", { body: msg.text });
         }
       });
 
-      // Listen for notification clicks to open link
-      OneSignal.on('notificationDisplay', function(event) {
-        console.log('OneSignal notification displayed:', event);
+      firebase.database().ref("users/" + targetUser + "/lastSeen").on("value", snap => {
+        const val = snap.val();
+        if (!val) return;
+        const lastSeenTime = new Date(val);
+        const diff = Date.now() - lastSeenTime.getTime();
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        let status = "";
+        if (minutes < 1) status = "Active now";
+        else if (hours < 1) status = `Active ${minutes} min ago`;
+        else status = `Active ${hours} hr ago`;
+        document.getElementById("lastSeen").textContent = "Last seen: " + status;
       });
-      OneSignal.on('notificationClick', function(event) {
-        // You can handle click here if needed
-        console.log('OneSignal notification clicked:', event);
-      });
-    });
-  }
 
-  // Save OneSignal userId (player ID) to Firebase under tokens/user/deviceId
-  function saveOneSignalIdToFirebase(id) {
-    if (!targetUser || !deviceId) return;
-    firebase.database().ref("tokens/" + targetUser + "/" + deviceId).set(id);
-    console.log("Saved OneSignal ID to Firebase:", id);
-  }
+      if (Notification.permission === 'granted' && localStorage.getItem("notifEnabled") === "true") {
+        document.getElementById("notifToggleBtn").textContent = "🔕 Disable Notifications";
+      } else {
+        document.getElementById("notifToggleBtn").textContent = "🔔 Enable Notifications";
+      }
+    };
 
-  // Remove OneSignal userId from Firebase
-  function removeOneSignalIdFromFirebase() {
-    if (!targetUser || !deviceId) return;
-    firebase.database().ref("tokens/" + targetUser + "/" + deviceId).remove();
-    console.log("Removed OneSignal ID from Firebase");
-  }
-
-  // Toggle button handler
-  function toggleNotifications() {
-    const OneSignal = window.OneSignal || [];
-    OneSignal.push(() => {
-      OneSignal.isPushNotificationsEnabled().then(function(isEnabled) {
-        if (isEnabled) {
-          // Disable notifications
-          OneSignal.setSubscription(false);
-        } else {
-          // Enable notifications
-          OneSignal.registerForPushNotifications().then(() => {
-            // After user accepts permission, subscriptionChange event will handle rest
-          }).catch(() => {
-            alert("Notification permission denied or blocked.");
-          });
-        }
-      });
-    });
-  }
-
-  // Update button text based on enabled state
-  function updateNotifButton(enabled) {
-    const btn = document.getElementById("notifToggleBtn");
-    if (enabled) {
-      btn.textContent = "🔕 Disable Notifications";
-    } else {
-      btn.textContent = "🔔 Enable Notifications";
+    function sendMessage() {
+      const textEl = document.getElementById("message");
+      const text = textEl.value.trim();
+      if (!text || !chatRef) return;
+      const now = new Date().toLocaleString();
+      chatRef.push({ from: "Anonymous", text: text, time: now });
+      textEl.value = "";
+      firebase.database().ref("notifications").push({
+  to: targetUser, // admin username
+  message: text,
+  time: now
+});
     }
+
+    function escapeHTML(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function saveTokenToDatabase(token) {
+      const user = new URLSearchParams(location.search).get("user");
+      if (!user) return;
+      firebase.database().ref("tokens/" + user).set(token);
+    }
+
+    function removeTokenFromDatabase() {
+      const user = new URLSearchParams(location.search).get("user");
+      if (!user) return;
+      firebase.database().ref("tokens/" + user).remove();
+    }
+
+    function toggleNotifications() {
+      if (localStorage.getItem("notifEnabled") === "true") {
+        localStorage.setItem("notifEnabled", "false");
+        removeTokenFromDatabase();
+        document.getElementById("notifToggleBtn").textContent = "🔔 Enable Notifications";
+        alert("🔕 Notifications disabled.");
+      } else {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            messaging.getToken({
+              vapidKey: 'BOa3k5chES3HKrSL8mPdaorhf_TEiTSruz_rXCFBeZxAGjUyKTIwAWmLi39RTyZPxSPo_nAGGCqSqMFiF68EnU0'
+            }).then(currentToken => {
+              if (currentToken) {
+                saveTokenToDatabase(currentToken);
+                localStorage.setItem("notifEnabled", "true");
+                document.getElementById("notifToggleBtn").textContent = "🔕 Disable Notifications";
+                alert("🔔 Notifications enabled!");
+              } else {
+                alert("⚠️ Failed to get token.");
+              }
+            });
+          } else {
+            alert("❌ Notification permission denied.");
+          }
+        });
+      }
+    }
+    firebase.database().ref("notifications").on("child_added", snap => {
+  const data = snap.val();
+  const deviceId = localStorage.getItem("deviceId");
+
+  if (data.to === deviceId && Notification.permission === "granted") {
+    new Notification("Reply from Admin", {
+      body: data.message
+    });
   }
-</script>
+});
+  </script>
 </body>
-  </html>
+</html>
