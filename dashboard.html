@@ -806,17 +806,17 @@
     });
   }
 });
+
+
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+const installStatus = document.getElementById('installStatus');
 // Register service worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js')
     .then(() => console.log('Service Worker Registered'))
     .catch(err => console.error('Service Worker registration failed:', err));
 }
-
-let deferredPrompt;
-const installBtn = document.getElementById('installBtn');
-const installStatus = document.getElementById('installStatus');
-
 // Listen for beforeinstallprompt event
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();               // Prevent default prompt
