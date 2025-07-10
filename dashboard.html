@@ -115,7 +115,7 @@
   box-shadow: 0 4px 15px rgba(0, 162, 255, 0.3);
   cursor: pointer;
   transition: background 0.3s ease, box-shadow 0.3s ease;
-  display: none;
+  display: inline-block;
 }
 
 #installBtn:hover {
@@ -826,21 +826,17 @@
   }
 });
 
+
   const installBtn = document.getElementById('installBtn');
   const installInstructions = document.getElementById('installInstructions');
 
-  // Check if running in standalone (PWA) mode
-  const isInStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-
-  if (!isInStandalone) {
-    installBtn.style.display = 'inline-block';
-  }
-
   installBtn.addEventListener('click', () => {
     installInstructions.style.display = 'block';
+    installBtn.disabled = true;
+    installBtn.innerText = '📦 Installation Guide';
   });
-
 </script>
+
 
 </body>
   </html>
