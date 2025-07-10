@@ -1,4 +1,4 @@
-const CACHE_NAME = "chatroom-v2"; // update version here when needed
+const CACHE_NAME = "chatroom-v4"; // update version here when needed
 
 const FILES_TO_PRECACHE = [
   "/",
