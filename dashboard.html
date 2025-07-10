@@ -104,34 +104,40 @@
     }
     
 #installBtn {
-  background: rgba(255, 165, 0, 0.4); /* orange glassy */
+  background: rgba(255, 100, 0, 0.5); /* Darker orange glassy */
   color: #fff;
   font-weight: bold;
   font-size: 1.1rem;
   padding: 12px 28px;
   border-radius: 30px;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(8px);
-  box-shadow: 0 4px 15px rgba(255, 165, 0, 0.5);
+  box-shadow: 0 4px 20px rgba(255, 120, 0, 0.6);
   cursor: pointer;
   transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 #installBtn:hover {
-  background: rgba(255, 140, 0, 0.6);
-  box-shadow: 0 6px 20px rgba(255, 165, 0, 0.6);
+  background: rgba(255, 80, 0, 0.6);
+  box-shadow: 0 6px 25px rgba(255, 100, 0, 0.7);
 }
 
-/* Neon orange box */
+/* Neon orange instruction box */
 .glass-box.neon-orange {
-  background: rgba(255, 120, 0, 0.2);
-  border-left: 4px solid orange;
-  box-shadow: 0 0 15px rgba(255, 140, 0, 0.8);
+  margin-top: 10px;
+  padding: 16px 20px;
+  border-radius: 15px;
+  background: rgba(255, 120, 0, 0.1);
+  border: 1px solid rgba(255, 165, 0, 0.3);
+  box-shadow: 0 0 18px rgba(255, 140, 0, 0.7);
   color: #fff;
-}
-.glass-box.neon-orange h4 {
-  color: #ffb84d;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
 }
 
+.glass-box.neon-orange h4 {
+  color: #ffc266;
+  margin-bottom: 10px;
+      }
     .info-box {
       background: rgba(255,255,255,0.2);
       border-left: 4px solid orange;
@@ -801,32 +807,34 @@
 });
 
       </script>
+<!-- Install App Button and Instructions -->
 <div id="installContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
   <button id="installBtn">📥 Install App</button>
-  <div id="installInstructions" style="display:none;" class="glass-box">
+  <div id="installInstructions" class="glass-box neon-orange" style="display:none;">
     <h4>📲 How to Install This App</h4>
     <ol>
       <li>Tap the <b>⋮</b> (3-dot menu) in the top-right corner of your browser.</li>
       <li>Tap <b>"Add to Home screen"</b>.</li>
       <li>Click on Install. <b>"Anonymous Chatroom"</b>.</li>
     </ol>
-    <p style="font-size: 14px; color: #ccc;">✅ You’ll get an app icon on your home screen!</p>
+    <p style="font-size: 14px; color: #eee;">✅ You’ll get an app icon on your home screen!</p>
   </div>
 </div>
-  <script>
+
+<script>
   document.getElementById('installBtn').addEventListener('click', () => {
     const inst = document.getElementById('installInstructions');
     inst.style.display = inst.style.display === 'none' ? 'block' : 'none';
   });
 
-  // Optionally hide in PWA
+  // Hide button if already installed
   window.addEventListener('load', () => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     if (isStandalone) {
       document.getElementById('installContainer').style.display = 'none';
     }
   });
-  </script>
+</script>
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js')
