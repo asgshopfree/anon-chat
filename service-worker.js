@@ -1,4 +1,4 @@
-const CACHE_NAME = "chatroom-v4";
+const CACHE_NAME = "chatroom-v7";
 const FILES_TO_CACHE = [
   "/",
   "/index.html",
