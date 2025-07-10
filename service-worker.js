@@ -1,4 +1,4 @@
-const CACHE_NAME = "chatroom-v3"; // ✅ Always bump this when updating files
+const CACHE_NAME = "chatroom-v2"; // update version here when needed
 
 const FILES_TO_PRECACHE = [
   "/",
@@ -13,18 +13,22 @@ const FILES_TO_PRECACHE = [
   "/icon-512.png"
 ];
 
-// ✅ Precache essential files on install
+// Install: cache essential files immediately
 self.addEventListener("install", (event) => {
+  console.log("🔧 Service Worker Installing...");
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_PRECACHE))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(FILES_TO_PRECACHE);
+    })
   );
-  self.skipWaiting(); // Force immediate activation
 });
 
-// ✅ Delete old caches on activate
+// Activate: remove old cache versions and take control
 self.addEventListener("activate", (event) => {
+  console.log("🚀 Service Worker Activating...");
   event.waitUntil(
-    caches.keys().then(keys =>
+    caches.keys().then((keys) =>
       Promise.all(
         keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
       )
@@ -33,22 +37,24 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// ✅ Network-first strategy with cache fallback
+// Fetch: Network First Strategy
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return; // only cache GET requests
-
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // ✅ Save updated response to cache
+        // Update the cache in background
         return caches.open(CACHE_NAME).then(cache => {
           cache.put(event.request, response.clone());
           return response;
         });
       })
-      .catch(() =>
-        // ❌ Network failed → fallback to cache
-        caches.match(event.request)
-      )
+      .catch(() => caches.match(event.request)) // fallback to cache if offline
   );
+});
+
+// Allow skipWaiting() via postMessage
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.action === "skipWaiting") {
+    self.skipWaiting();
+  }
 });
