@@ -22,6 +22,14 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      flex-direction: column;
+    }
+
+    .logo {
+      width: 90px;
+      height: 90px;
+      margin-bottom: 20px;
+      animation: fadeIn 0.8s ease-in-out;
     }
 
     .signup-box {
@@ -111,21 +119,31 @@
       input, button {
         font-size: 14px;
       }
+
+      .logo {
+        width: 70px;
+        height: 70px;
+      }
     }
   </style>
 </head>
 <body>
-   <div class="signup-box">
-  <h2>Create an Account</h2>
-  <input type="text" id="username" placeholder="Choose a username" />
-  <input type="password" id="password" placeholder="Choose a password" />
-  <button onclick="signUp()">Sign Up</button>
-  <p id="status"></p>
-  <p style="margin-top: 15px; font-size: 14px;">
-    Already have an account? 
-    <a href="login.html" style="color: #00e676; text-decoration: underline;">Login</a>
-  </p>
-</div>
+
+  <!-- ✅ Centered Logo -->
+  <img src="icon.png" alt="App Logo" class="logo">
+
+  <!-- ✅ Signup Box -->
+  <div class="signup-box">
+    <h2>Create an Account</h2>
+    <input type="text" id="username" placeholder="Choose a username" />
+    <input type="password" id="password" placeholder="Choose a password" />
+    <button onclick="signUp()">Sign Up</button>
+    <p id="status"></p>
+    <p style="margin-top: 15px; font-size: 14px;">
+      Already have an account?
+      <a href="login.html" style="color: #00e676; text-decoration: underline;">Login</a>
+    </p>
+  </div>
 
   <script>
     function isValidUsername(username) {
@@ -137,47 +155,44 @@
     }
 
     function signUp() {
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const status = document.getElementById("status");
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const status = document.getElementById("status");
 
-  if (!username || !password) {
-    alert("All fields are required");
-    return;
-  }
+      if (!username || !password) {
+        alert("All fields are required");
+        return;
+      }
 
-  if (!isValidUsername(username)) {
-    status.textContent = "❌ Username must be lowercase letters, numbers, or underscores.";
-    return;
-  }
+      if (!isValidUsername(username)) {
+        status.textContent = "❌ Username must be lowercase letters, numbers, or underscores.";
+        return;
+      }
 
-  if (!isValidPassword(password)) {
-    status.textContent = "❌ Password must be at least 6 characters and include letters & numbers.";
-    return;
-  }
+      if (!isValidPassword(password)) {
+        status.textContent = "❌ Password must be at least 6 characters and include letters & numbers.";
+        return;
+      }
 
-  const userRef = firebase.database().ref("users/" + username);
+      const userRef = firebase.database().ref("users/" + username);
 
-  // চেক করো ইউজার আগেই আছে কি না
-  userRef.once("value").then(snapshot => {
-    if (snapshot.exists()) {
-      status.textContent = "❌ Username already taken.";
-    } else {
-      const now = new Date().toISOString();
-      // ইউজার তৈরি করো
-      userRef.set({ password, lastSeen: now }).then(() => {
-        status.textContent = "✅ Account created. Redirecting...";
-        localStorage.setItem("loggedInUser", username);
-        setTimeout(() => window.location.href = "dashboard.html", 1500);
+      userRef.once("value").then(snapshot => {
+        if (snapshot.exists()) {
+          status.textContent = "❌ Username already taken.";
+        } else {
+          const now = new Date().toISOString();
+          userRef.set({ password, lastSeen: now }).then(() => {
+            status.textContent = "✅ Account created. Redirecting...";
+            localStorage.setItem("loggedInUser", username);
+            setTimeout(() => window.location.href = "dashboard.html", 1500);
+          }).catch((err) => {
+            status.textContent = "❌ Error creating account: " + err.message;
+          });
+        }
       }).catch((err) => {
-        status.textContent = "❌ Error creating account: " + err.message;
+        status.textContent = "❌ Error checking username: " + err.message;
       });
     }
-  }).catch((err) => {
-    status.textContent = "❌ Error checking username: " + err.message;
-  });
-}
-
   </script>
 </body>
 </html>
