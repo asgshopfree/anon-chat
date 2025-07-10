@@ -8,10 +8,22 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
-
-  <!-- OneSignal SDK -->
-  <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
-
+  <!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<!-- OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+<script>
+window.OneSignal = window.OneSignal || [];
+OneSignal.push(function() {
+    OneSignal.init({
+        appId: "YOUR_ONESIGNAL_APP_ID", // Replace here
+        notifyButton: { enable: true },
+        allowLocalhostAsSecureOrigin: true
+    });
+});
+</script>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -415,238 +427,336 @@
     <div class="chatbox" id="chatBox-${deviceId}" style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; max-height: 200px; overflow-y: auto; margin-bottom: 10px;"></div>
     <div style="display: flex; gap: 10px;">
       <textarea id="replyBox-${deviceId}" placeholder="Reply..." style="flex: 1; padding: 10px; border-radius: 8px; border: none;"></textarea>
-      <button onclick="sendReply('${deviceId}')" style="background: #00bcd4; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Send</button>
+      <button onclick="sendReply('${deviceId}')" style="background: #00bcd4; color: #fff; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">Send</button>
     </div>
   </div>
-      `;
+`;
       chatList.appendChild(container);
-
-      // Fill chat messages
-      const chatBox = container.querySelector(`#chatBox-${deviceId}`);
-      chatBox.innerHTML = "";
-      Object.values(messages).forEach(msg => {
-        const div = document.createElement("div");
-        div.textContent = `[${msg.time}] ${msg.from}: ${msg.text}`;
-        div.className = msg.from === user ? "fromUser" : "fromOther";
-        chatBox.appendChild(div);
-      });
     }
 
     updateNotifBadge(unseenCount);
+
+    // Show notification if new unseen messages AND window is hidden
+    if (unseenCount > previousUnseen && Notification.permission === "granted" && document.hidden) {
+      new Notification("🔔 New Message!", {
+        body: `${unseenCount} new message(s) in your inbox.`,
+        icon: '' // optionally add icon url here
+      });
+    }
+    previousUnseen = unseenCount;
   });
 
-  // Toggle chatbox below device entry
+  function toggleMenu(btn) {
+    const menu = btn.parentElement.querySelector(".menu");
+    // Close all menus first
+    document.querySelectorAll(".menu").forEach(m => m.style.display = "none");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+  }
+
   function toggleChat(deviceId) {
-    const chatDiv = document.getElementById(`chat-${deviceId}`);
-    if (!chatDiv) return;
-    if (chatDiv.style.display === "none" || !chatDiv.style.display) {
-      chatDiv.style.display = "block";
-      // Mark as seen in Firebase
-      firebase.database().ref(`chats/${user}/${deviceId}`).update({ seen: true });
-    } else {
-      chatDiv.style.display = "none";
+  document.querySelectorAll('.inline-chatbox').forEach(c => c.style.display = "none"); // hide all
+  const thisChat = document.getElementById(`chat-${deviceId}`);
+  thisChat.style.display = "block";
+
+  const chatBox = document.getElementById(`chatBox-${deviceId}`);
+  chatBox.innerHTML = "";
+
+  const msgRef = firebase.database().ref(`chats/${user}/${deviceId}/messages`);
+  msgRef.off();
+  msgRef.on("child_added", snap => {
+    const msg = snap.val();
+    const div = document.createElement("div");
+    div.style = `background:${msg.from === user ? '#b2ebf2' : '#ffe082'};margin:5px;padding:10px;border-radius:10px;color:#000;`;
+    div.innerHTML = `<strong>${msg.from}</strong> (${msg.time}): <br>${msg.text}`;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+
+  firebase.database().ref(`chats/${user}/${deviceId}/seen`).set(true);
+}
+
+function sendReply(deviceId) {
+  const input = document.getElementById(`replyBox-${deviceId}`);
+  const msg = input.value.trim();
+  if (!msg) return;
+  const now = new Date().toLocaleString();
+  firebase.database().ref(`chats/${user}/${deviceId}/messages`).push({
+    from: user,
+    text: msg,
+    time: now
+  });
+  input.value = "";
+  firebase.database().ref("notifications").push({
+  to: deviceId, // anonymous user's device ID
+  message: text,
+  time: now
+});
+  }
+  function deleteChat(id) {
+    if (confirm("Delete this chat?")) {
+      firebase.database().ref("chats/" + user + "/" + id).remove();
     }
   }
 
-  function sendReply(deviceId) {
-    const input = document.getElementById(`replyBox-${deviceId}`);
-    const msg = input.value.trim();
-    if (!msg) return;
-    const now = new Date().toLocaleString();
-
-    firebase.database().ref(`chats/${user}/${deviceId}/messages`).push({
-      from: user,
-      text: msg,
-      time: now
-    });
-    input.value = "";
-
-    // Trigger notification
-    firebase.database().ref("notifications").push({
-      to: deviceId,
-      message: msg,
-      time: now
-    });
-  }
-
-  // For global chat view (Messages tab chatView)
-  let activeChat = null;
-
-  // Open chat in messages tab
-  function openChat(deviceId) {
-    activeChat = deviceId;
+  let activeChat = "";
+  function openChat(id) {
+    activeChat = id;
     document.getElementById("chatView").style.display = "block";
-    const chatBox = document.getElementById("chatBox");
-    chatBox.innerHTML = "";
-    document.getElementById("replyBox").value = "";
+    const box = document.getElementById("chatBox");
+    box.innerHTML = "";
+    const msgRef = firebase.database().ref("chats/" + user + "/" + id + "/messages");
+    msgRef.off();
 
-    // Fetch messages for this chat
-    firebase.database().ref(`chats/${user}/${deviceId}/messages`).on("value", snap => {
-      chatBox.innerHTML = "";
-      const msgs = snap.val();
-      if (!msgs) return;
-      Object.values(msgs).forEach(msg => {
-        const div = document.createElement("div");
-        div.textContent = `[${msg.time}] ${msg.from}: ${msg.text}`;
-        div.className = msg.from === user ? "fromUser" : "fromOther";
-        chatBox.appendChild(div);
-      });
-      chatBox.scrollTop = chatBox.scrollHeight;
+    msgRef.on("child_added", snap => {
+      const msg = snap.val();
+      const div = document.createElement("div");
+      div.className = msg.from === user ? "fromUser" : "fromOther";
+      div.innerHTML = `<strong>${msg.from}</strong> (${msg.time}): <br>${msg.text}`;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
     });
 
-    // Mark as seen
-    firebase.database().ref(`chats/${user}/${deviceId}`).update({ seen: true });
+    // Mark chat as seen
+    firebase.database().ref("chats/" + user + "/" + id + "/seen").set(true);
+
+    // Clear notification badge for this chat
+    previousUnseen = 0;
+    updateNotifBadge(0);
   }
 
   function closeChat() {
-    activeChat = null;
     document.getElementById("chatView").style.display = "none";
+    activeChat = "";
   }
 
   function sendReplyGlobal() {
     const msg = document.getElementById("replyBox").value.trim();
     if (!msg || !activeChat) return;
     const now = new Date().toLocaleString();
-
-    firebase.database().ref(`chats/${user}/${activeChat}/messages`).push({
+    firebase.database().ref("chats/" + user + "/" + activeChat + "/messages").push({
       from: user,
       text: msg,
       time: now
     });
     document.getElementById("replyBox").value = "";
-
-    firebase.database().ref("notifications").push({
-      to: activeChat,
-      message: msg,
-      time: now
-    });
   }
 
-  // Settings functions (dummy for now)
+  // Change username function
   function changeUsername() {
-    const newUsername = document.getElementById("newUsername").value.trim();
-    const currentPassword = document.getElementById("currentPasswordForUsername").value;
+    const newU = document.getElementById("newUsername").value.trim();
+    const pass = document.getElementById("currentPasswordForUsername").value.trim();
     const status = document.getElementById("statusUsername");
-    if (!newUsername || !currentPassword) {
-      status.textContent = "Please fill both fields.";
-      return;
-    }
-    // Implement your actual username change logic here
-    status.textContent = "Username changed successfully (demo).";
+    status.textContent = "";
+    if (!newU || !pass) return alert("Fill all fields");
+
+    const oldRef = firebase.database().ref("users/" + user);
+    oldRef.once("value").then(snapshot => {
+      if (!snapshot.exists()) {
+        status.textContent = "❌ Current user not found.";
+        return;
+      }
+      if (snapshot.val().password !== pass) {
+        status.textContent = "❌ Incorrect password.";
+        return;
+      }
+      const newRef = firebase.database().ref("users/" + newU);
+      newRef.once("value").then(snap => {
+        if (snap.exists()) {
+          status.textContent = "❌ Username already taken.";
+        } else {
+          // Copy user data to new username node
+          newRef.set({ password: pass, lastSeen: new Date().toISOString() }).then(() => {
+            // Move chats
+            firebase.database().ref("chats/" + user).once("value").then(data => {
+              firebase.database().ref("chats/" + newU).set(data.val() || {}).then(() => {
+                // Remove old data
+                firebase.database().ref("chats/" + user).remove();
+                oldRef.remove();
+                localStorage.setItem("loggedInUser", newU);
+                alert("Username updated. Refreshing...");
+                location.reload();
+              });
+            });
+          });
+        }
+      });
+    });
   }
 
+  // Change password function
   function changePassword() {
-    const prev = document.getElementById("prevPassword").value;
-    const nw = document.getElementById("newPassword").value;
-    const confirm = document.getElementById("confirmPassword").value;
+    const prev = document.getElementById("prevPassword").value.trim();
+    const newP = document.getElementById("newPassword").value.trim();
+    const confirmP = document.getElementById("confirmPassword").value.trim();
     const status = document.getElementById("statusPassword");
-    if (!prev || !nw || !confirm) {
-      status.textContent = "Please fill all fields.";
+    status.textContent = "";
+
+    if (!prev || !newP || !confirmP) {
+      status.textContent = "❌ Fill all fields.";
       return;
     }
-    if (nw.length < 6) {
-      status.textContent = "New password must be at least 6 characters.";
+    if (newP.length < 6) {
+      status.textContent = "❌ Password must be at least 6 characters.";
       return;
     }
-    if (nw !== confirm) {
-      status.textContent = "Passwords do not match.";
+    // Must include letters and numbers
+    if (!(/[a-zA-Z]/.test(newP) && /\d/.test(newP))) {
+      status.textContent = "❌ Password must include letters and numbers.";
       return;
     }
-    if (!(/\d/.test(nw) && /[a-zA-Z]/.test(nw))) {
-      status.textContent = "New password must contain letters and numbers.";
+    if (newP !== confirmP) {
+      status.textContent = "❌ New passwords do not match.";
       return;
     }
-    // Implement your actual password change logic here
-    status.textContent = "Password changed successfully (demo).";
+
+    const userRef = firebase.database().ref("users/" + user);
+    userRef.once("value").then(snapshot => {
+      if (!snapshot.exists()) {
+        status.textContent = "❌ User not found.";
+        return;
+      }
+      if (snapshot.val().password !== prev) {
+        status.textContent = "❌ Previous password is incorrect.";
+        return;
+      }
+      // Update password
+      userRef.update({ password: newP }).then(() => {
+        status.style.color = "lightgreen";
+        status.textContent = "✅ Password updated successfully.";
+        // Clear fields
+        document.getElementById("prevPassword").value = "";
+        document.getElementById("newPassword").value = "";
+        document.getElementById("confirmPassword").value = "";
+      }).catch(() => {
+        status.textContent = "❌ Error updating password.";
+      });
+    });
   }
 
-  // OneSignal Push Notifications Integration
+  // Request notification permission on page load
+  if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+    Notification.requestPermission();
+  }
 
-  window.OneSignal = window.OneSignal || [];
-  OneSignal.push(function() {
-    OneSignal.init({
-      appId: "f98df9ef-721d-4a74-a411-b090c26b4d86",
-      allowLocalhostAsSecureOrigin: true,
-      notifyButton: { enable: false }
-    });
-
-    OneSignal.isPushNotificationsEnabled(function(isEnabled) {
-      updateNotifButton(isEnabled);
-      if (isEnabled) {
-        savePlayerId();
-      }
-    });
-
-    OneSignal.on('subscriptionChange', function(isSubscribed) {
-      updateNotifButton(isSubscribed);
-      if (isSubscribed) {
-        savePlayerId();
-      } else {
-        removePlayerId();
-      }
-    });
+  // Close menus if clicking outside
+  document.addEventListener("click", (e) => {
+    if (!e.target.matches(".menu, button[onclick^='toggleMenu']")) {
+      document.querySelectorAll(".menu").forEach(m => m.style.display = "none");
+    }
   });
+</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+<script>
+  const messaging = firebase.messaging();
 
-  function savePlayerId() {
-    if (!user) return;
-    OneSignal.getUserId(function(playerId) {
-      if (playerId) {
-        firebase.database().ref("tokens/" + user).set(playerId);
+  navigator.serviceWorker.register('firebase-messaging-sw.js')
+    .then(reg => {
+      messaging.useServiceWorker(reg);
+      return messaging.getToken({
+        vapidKey: 'BOa3k5chES3HKrSL8mPdaorhf_TEiTSruz_rXCFBeZxAGjUyKTIwAWmLi39RTyZPxSPo_nAGGCqSqMFiF68EnU0' // replace this
+      });
+    })
+    .then(currentToken => {
+      if (currentToken) {
+        console.log("FCM Token:", currentToken);
+        firebase.database().ref("tokens/" + user).set(currentToken);
+      } else {
+        console.warn('No registration token available.');
       }
+    })
+    .catch(err => {
+      console.error('An error occurred while retrieving token.', err);
     });
+</script>
+
+<footer>
+  Developed by Mahiur Rahman.  
+  <a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer">About Me</a>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+
+<script>
+  const messaging = firebase.messaging();
+  const user = localStorage.getItem("loggedInUser");
+
+  // Ensure service worker is registered first
+  let swRegistration = null;
+  navigator.serviceWorker.register('firebase-messaging-sw.js')
+    .then(reg => {
+      swRegistration = reg;
+      messaging.useServiceWorker(swRegistration);
+      updateNotifButton(); // update label on load
+    });
+
+  // Save/remove token from Firebase
+  function saveTokenToDatabase(token) {
+    if (!user) return;
+    firebase.database().ref("tokens/" + user).set(token);
   }
 
-  function removePlayerId() {
+  function removeTokenFromDatabase() {
     if (!user) return;
     firebase.database().ref("tokens/" + user).remove();
   }
 
+  // Toggle notification handler
+  
   function toggleNotifications() {
-  const btn = document.getElementById("notifToggleBtn");
+    const btn = document.getElementById("notifToggleBtn");
 
-  OneSignal.isPushNotificationsEnabled(function(isEnabled) {
-    console.log("Push enabled?", isEnabled);
-
-    if (isEnabled) {
-      OneSignal.setSubscription(false).then(() => {
-        console.log("Subscription disabled");
-        btn.textContent = "🔔 Enable Notifications";
-        alert("🔕 Notifications disabled.");
-        removePlayerId();
-      }).catch(e => console.error("Error disabling subscription:", e));
-
+    if (localStorage.getItem("notifEnabled") === "true") {
+      localStorage.setItem("notifEnabled", "false");
+      removeTokenFromDatabase();
+      btn.textContent = "🔔 Enable Notifications";
+      alert("🔕 Notifications disabled.");
     } else {
-      // Request permission first
       Notification.requestPermission().then(permission => {
-        console.log("Notification permission:", permission);
         if (permission === "granted") {
-          OneSignal.setSubscription(true).then(() => {
-            console.log("Subscription enabled");
-            btn.textContent = "🔕 Disable Notifications";
-            alert("🔔 Notifications enabled!");
-            savePlayerId();
-          }).catch(e => console.error("Error enabling subscription:", e));
+          messaging.getToken({
+            vapidKey: 'BOa3k5chES3HKrSL8mPdaorhf_TEiTSruz_rXCFBeZxAGjUyKTIwAWmLi39RTyZPxSPo_nAGGCqSqMFiF68EnU0',
+            serviceWorkerRegistration: swRegistration
+          }).then(currentToken => {
+            if (currentToken) {
+              saveTokenToDatabase(currentToken);
+              localStorage.setItem("notifEnabled", "true");
+              btn.textContent = "🔕 Disable Notifications";
+              alert("🔔 Notifications enabled!");
+            } else {
+              alert("⚠️ Failed to get FCM token.");
+            }
+          }).catch(err => {
+            console.error("Token error:", err);
+            alert("❌ Error getting token.");
+          });
         } else {
           alert("❌ Notification permission denied.");
         }
       });
     }
-  });
-}
+  }
 
-  function updateNotifButton(isEnabled) {
+  function updateNotifButton() {
     const btn = document.getElementById("notifToggleBtn");
-    if (isEnabled) {
+    if (Notification.permission === "granted" && localStorage.getItem("notifEnabled") === "true") {
       btn.textContent = "🔕 Disable Notifications";
     } else {
       btn.textContent = "🔔 Enable Notifications";
     }
   }
+firebase.database().ref("notifications").on("child_added", snap => {
+  const data = snap.val();
+  const currentUser = localStorage.getItem("loggedInUser");
 
+  if (data.to === currentUser && Notification.permission === "granted") {
+    new Notification("New Message", {
+      body: data.message
+    });
+  }
+});
+  // Update label when page loads
+  window.addEventListener("load", updateNotifButton);
 </script>
 
-<footer>
-  Developed by <a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer">Mahiur Rahman</a>
-</footer>
 </body>
-    </html>
+      </html>
