@@ -368,10 +368,15 @@
 <script>
   const user = localStorage.getItem("loggedInUser");
   if (!user) window.location.href = "login.html";
-
+ 
   document.getElementById("welcome").textContent = "Welcome, " + user;
   document.getElementById("shareLink").value = location.origin + "/chat.html?user=" + user;
 
+  if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker.js")
+    .then(reg => console.log("✅ SW registered:", reg.scope))
+    .catch(err => console.error("❌ SW registration failed:", err));
+  }
   // Tabs
   function showTab(tabId, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
