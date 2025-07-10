@@ -372,10 +372,27 @@
   document.getElementById("welcome").textContent = "Welcome, " + user;
   document.getElementById("shareLink").value = location.origin + "/chat.html?user=" + user;
 
-  if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/service-worker.js")
-    .then(reg => console.log("✅ SW registered:", reg.scope))
-    .catch(err => console.error("❌ SW registration failed:", err));
+  if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js').then(registration => {
+    console.log("✅ SW registered:", registration);
+
+    // Auto-check every 30s
+    setInterval(() => registration.update(), 30000);
+
+    registration.addEventListener("updatefound", () => {
+      const newWorker = registration.installing;
+      newWorker.addEventListener("statechange", () => {
+        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+          newWorker.postMessage({ action: "skipWaiting" });
+        }
+      });
+    });
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      console.log("🔄 Reloading due to new SW");
+      window.location.reload();
+    });
+  }).catch(console.error);
   }
   // Tabs
   function showTab(tabId, btn) {
