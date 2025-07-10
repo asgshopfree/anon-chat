@@ -1,4 +1,4 @@
-const CACHE_NAME = "chatroom-v4"; // 🔁 bump version when you change HTML/CSS/JS
+const CACHE_NAME = "chatroom-v6"; // 🔁 bump version when you change HTML/CSS/JS
 
 const FILES_TO_PRECACHE = [
   "/",
