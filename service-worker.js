@@ -1,6 +1,5 @@
-const CACHE_NAME = "chatroom-v6"; // 🔁 bump version when you change HTML/CSS/JS
-
-const FILES_TO_PRECACHE = [
+const CACHE_NAME = "chatroom-v4";
+const FILES_TO_CACHE = [
   "/",
   "/index.html",
   "/dashboard.html",
@@ -14,9 +13,9 @@ const FILES_TO_PRECACHE = [
 ];
 
 self.addEventListener("install", (event) => {
-  self.skipWaiting(); // install immediately
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_PRECACHE))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
   );
 });
 
@@ -34,20 +33,16 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
-      .then(response => {
-        const clone = response.clone();
+      .then(networkResponse => {
+        // Update cache with latest response
         caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, clone);
+          cache.put(event.request, networkResponse.clone());
         });
-        return response;
+        return networkResponse;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => {
+        // If offline, serve from cache
+        return caches.match(event.request);
+      })
   );
-});
-
-// Allow skipWaiting on message
-self.addEventListener("message", (event) => {
-  if (event.data === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
 });
