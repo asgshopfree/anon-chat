@@ -8,9 +8,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="firebase-config.js">
-    <!-- PWA Manifest -->
+     </script>
+  <!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json" />
-  </script>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -806,7 +806,7 @@
     });
   }
 });
-  // Register service worker
+// Register service worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js')
     .then(() => console.log('Service Worker Registered'))
@@ -851,7 +851,7 @@ window.addEventListener('appinstalled', () => {
 // Also hide button if already running in standalone mode
 if (window.matchMedia('(display-mode: standalone)').matches) {
   installBtn.style.display = 'none';
-}
+  } 
 </script>
 
 </body>
