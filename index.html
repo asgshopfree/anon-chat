@@ -27,7 +27,7 @@
   <!-- Favicon -->
   <link rel="icon" href="favicon.ico" />
   <!-- PWA Manifest -->
-
+<link rel="manifest" href="manifest.json" />
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css" />
   
@@ -127,7 +127,33 @@
       background: #f57c00;
       box-shadow: 0 7px 25px rgba(245, 124, 0, 0.9);
     }
-    
+    main button#installBtn {
+  background: #ff9800;
+  color: #000;
+  font-weight: 700;
+  font-size: 1.5rem;
+  padding: 16px 40px;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 5px 20px rgba(255, 152, 0, 0.7);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+  margin-bottom: 20px;
+  display: none; /* hidden initially */
+}
+#installBtn:hover {
+  background: #f57c00;
+  box-shadow: 0 7px 25px rgba(245, 124, 0, 0.9);
+}
+#installStatus {
+  margin-top: 10px;
+  font-size: 1rem;
+  min-height: 20px;
+  color: #ffd54f;
+  font-weight: 600;
+}
+
     /* Features Section */
     section.features {
       text-align: left;
@@ -214,6 +240,8 @@
   <main>
     <h1>Anonymous Chatroom</h1>
     <button id="getLinkBtn" onclick="window.location.href='signup.html'">Get Your Link</button>
+<button id="installBtn" aria-label="Install the Anonymous Chatroom App">Install the App</button>
+<div id="installStatus" role="alert" aria-live="polite"></div>
     <section class="features" aria-label="Features of Anonymous Chatroom">
       <h2>Why Choose Anonymous Chatroom?</h2>
       <ul>
@@ -238,6 +266,52 @@
   if (localStorage.getItem("loggedInUser")) {
     window.location.href = "dashboard.html";
   }
+    // Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(() => console.log('Service Worker Registered'))
+    .catch(err => console.error('Service Worker registration failed:', err));
+}
+
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+const installStatus = document.getElementById('installStatus');
+
+// Listen for beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();               // Prevent default prompt
+  deferredPrompt = e;               // Save event for later
+  installBtn.style.display = 'inline-block'; // Show button
+  installStatus.textContent = '';
+});
+
+// When user clicks install button
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) {
+    installStatus.textContent = 'Install prompt not ready yet, please try again later.';
+    return;
+  }
+  deferredPrompt.prompt();          // Show browser install prompt
+  const choice = await deferredPrompt.userChoice;
+  if (choice.outcome === 'accepted') {
+    installStatus.textContent = 'Thank you for installing!';
+    installBtn.style.display = 'none'; // Hide button after install
+  } else {
+    installStatus.textContent = 'Installation dismissed.';
+  }
+  deferredPrompt = null;
+});
+
+// Hide button if app already installed
+window.addEventListener('appinstalled', () => {
+  installStatus.textContent = 'App installed!';
+  installBtn.style.display = 'none';
+});
+
+// Also hide button if already running in standalone mode
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  installBtn.style.display = 'none';
+                        }
   </script>
 </body>
-</html>
+  </html>
