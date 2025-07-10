@@ -24,14 +24,25 @@
       align-items: center;
       flex-direction: column;
     }
-.logo {
-      width: 100px;
-      height: 100px;
-      background: #fff;
-      border: 3px solid red;
-      border-radius: 50%;
+
+    /* ✅ Logo wrapper */
+    .logo-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    .logo {
+      width: 90px;
+      height: 90px;
       object-fit: contain;
-}
+      background: #fff;
+      border-radius: 50%;
+      padding: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+
     .signup-box {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(15px);
@@ -128,10 +139,12 @@
   </style>
 </head>
 <body>
-<div class="logo">
-  <!-- ✅ Centered Logo -->
-  <img src="icon-512.png" alt="App Logo" >
-</div>
+
+  <!-- ✅ Logo Above Signup Box -->
+  <div class="logo-wrapper">
+    <img src="icon.png" alt="Logo" class="logo">
+  </div>
+
   <!-- ✅ Signup Box -->
   <div class="signup-box">
     <h2>Create an Account</h2>
