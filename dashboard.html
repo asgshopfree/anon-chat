@@ -102,35 +102,50 @@
     .tab.active {
       display: block;
     }
-    main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-top: 20px;
-  padding: 10px;
-  width: 100%;
-  max-width: 900px;
-}
-
+    
 #installBtn {
-  /* Shown when ready */
-  background: #ff9800;
-  color: #000;
+  background: rgba(0, 162, 255, 0.4);
+  color: #fff;
   font-weight: bold;
-  font-size: 1.2rem;
-  padding: 12px 30px;
+  font-size: 1.1rem;
+  padding: 12px 28px;
   border-radius: 30px;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 15px rgba(0, 162, 255, 0.3);
   cursor: pointer;
-  margin-top: 10px;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  display: none;
 }
 
-#installStatus {
-  margin-top: 8px;
-  font-size: 1rem;
-  color: #fff;
+#installBtn:hover {
+  background: rgba(0, 162, 255, 0.6);
+  box-shadow: 0 6px 20px rgba(0, 162, 255, 0.5);
 }
+
+.glass-box {
+  margin-top: 15px;
+  background: rgba(255, 255, 255, 0.08);
+  border-left: 4px solid #03a9f4;
+  backdrop-filter: blur(10px);
+  padding: 16px;
+  border-radius: 10px;
+  color: #fff;
+  max-width: 350px;
+  margin-inline: auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.glass-box h4 {
+  margin-top: 0;
+  color: #00cfff;
+}
+
+.glass-box ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
     .info-box {
       background: rgba(255,255,255,0.2);
       border-left: 4px solid orange;
@@ -302,10 +317,19 @@
   <h3>Your Chat Link</h3>
   <input type="text" id="shareLink" readonly style="width:100%; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: none;" />
   <button onclick="copyLink()">Copy Link</button>
-<main>
-  <button id="installBtn" aria-label="Install the Anonymous Chatroom App">Install the App</button>
-<div id="installStatus" role="alert" aria-live="polite"></div>
-</main>
+<div id="installContainer" style="text-align: center; margin-top: 20px;">
+  <button id="installBtn" aria-label="Install App">📥 Install App</button>
+  
+  <div id="installInstructions" style="display:none;" class="glass-box">
+    <h4>📲 How to Install This App</h4>
+    <ol>
+      <li>Tap the <b>⋮</b> (3-dot menu) in the top-right corner of your browser.</li>
+      <li>Select <b>"Add to Home screen"</b>.</li>
+      <li>Confirm by tapping <b>"Add"</b> when prompted.</li>
+    </ol>
+    <p style="font-size: 14px; color: #ccc;">✅ You’ll get an app icon on your home screen!</p>
+  </div>
+</div>
   <div class="info-box">
     <h4>🎯 Add it to your Instagram Profile</h4>
     <ul>
@@ -802,30 +826,18 @@
   }
 });
 
-  const installBtn = document.getElementById("installBtn");
-  const installStatus = document.getElementById("installStatus");
+  const installBtn = document.getElementById('installBtn');
+  const installInstructions = document.getElementById('installInstructions');
 
-  function isRunningInPWA() {
-    return (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
+  // Check if running in standalone (PWA) mode
+  const isInStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+  if (!isInStandalone) {
+    installBtn.style.display = 'inline-block';
   }
 
-  // Show install button ONLY if in browser (not standalone or PWA)
-  window.addEventListener("load", () => {
-    if (!isRunningInPWA()) {
-      installBtn.style.display = "inline-block";
-    } else {
-      installBtn.style.display = "none";
-    }
-  });
-
-  // Manual instructions on click
-  installBtn.addEventListener("click", () => {
-    installStatus.innerHTML = `
-      📲 <strong>To install this app:</strong><br>
-      1️⃣ Tap the <strong>three-dot menu</strong> (⋮) in your browser<br>
-      2️⃣ Tap <strong>"Add to Home screen"</strong><br>
-      3️⃣ Confirm and install! 🎉
-    `;
+  installBtn.addEventListener('click', () => {
+    installInstructions.style.display = 'block';
   });
 
 </script>
