@@ -104,38 +104,33 @@
       display: block;
     }
     main {
-      flex: 1;
-      max-width: 900px;
-      width: 100%;
-      text-align: center;
-      margin-top: 60px;
-      padding: 0 20px;
-    }
-    main button#installBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 10px;
+  width: 100%;
+  max-width: 900px;
+}
+
+#installBtn {
+  display: none; /* Shown when ready */
   background: #ff9800;
   color: #000;
-  font-weight: 700;
-  font-size: 1.5rem;
-  padding: 16px 40px;
-  border-radius: 40px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 12px 30px;
+  border-radius: 30px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 5px 20px rgba(255, 152, 0, 0.7);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  user-select: none;
-  margin-bottom: 20px;
-  display: none; /* hidden initially */
-}
-#installBtn:hover {
-  background: #f57c00;
-  box-shadow: 0 7px 25px rgba(245, 124, 0, 0.9);
-}
-#installStatus {
   margin-top: 10px;
+}
+
+#installStatus {
+  margin-top: 8px;
   font-size: 1rem;
-  min-height: 20px;
-  color: #ffd54f;
-  font-weight: 600;
+  color: #fff;
 }
     .info-box {
       background: rgba(255,255,255,0.2);
@@ -297,7 +292,10 @@
     Sign Out
   </button>
 </div>
-
+<main>
+  <button id="installBtn" aria-label="Install the Anonymous Chatroom App">Install the App</button>
+<div id="installStatus" role="alert" aria-live="polite"></div>
+</main>
 <div class="tab-buttons">
   <button class="active" onclick="showTab('link', this)">Your Link</button>
   <button id="messagesBtn" onclick="showTab('messages', this)">Messages <span class="badge" id="notifBadge" style="display:none;">0</span></button>
@@ -308,10 +306,7 @@
   <h3>Your Chat Link</h3>
   <input type="text" id="shareLink" readonly style="width:100%; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: none;" />
   <button onclick="copyLink()">Copy Link</button>
- <main>
-  <button id="installBtn" aria-label="Install the Anonymous Chatroom App">Install the App</button>
-<div id="installStatus" role="alert" aria-live="polite"></div>
- </main> <div class="info-box">
+<div class="info-box">
     <h4>🎯 Add it to your Instagram Profile</h4>
     <ul>
       <li>Open your Instagram app.</li>
