@@ -291,10 +291,7 @@
     Sign Out
   </button>
 </div>
-<main>
-  <button id="installBtn" aria-label="Install the Anonymous Chatroom App">Install the App</button>
-<div id="installStatus" role="alert" aria-live="polite"></div>
-</main>
+
 <div class="tab-buttons">
   <button class="active" onclick="showTab('link', this)">Your Link</button>
   <button id="messagesBtn" onclick="showTab('messages', this)">Messages <span class="badge" id="notifBadge" style="display:none;">0</span></button>
@@ -305,7 +302,11 @@
   <h3>Your Chat Link</h3>
   <input type="text" id="shareLink" readonly style="width:100%; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: none;" />
   <button onclick="copyLink()">Copy Link</button>
-<div class="info-box">
+<main>
+  <button id="installBtn" aria-label="Install the Anonymous Chatroom App">Install the App</button>
+<div id="installStatus" role="alert" aria-live="polite"></div>
+</main>
+  <div class="info-box">
     <h4>🎯 Add it to your Instagram Profile</h4>
     <ul>
       <li>Open your Instagram app.</li>
@@ -801,51 +802,32 @@
   }
 });
 
+  const installBtn = document.getElementById("installBtn");
+  const installStatus = document.getElementById("installStatus");
 
-let deferredPrompt;
-const installBtn = document.getElementById('installBtn');
-const installStatus = document.getElementById('installStatus');
-// Register service worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
-    .then(() => console.log('Service Worker Registered'))
-    .catch(err => console.error('Service Worker registration failed:', err));
-}
-// Listen for beforeinstallprompt event
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();               // Prevent default prompt
-  deferredPrompt = e;               // Save event for later
-  installBtn.style.display = 'inline-block'; // Show button
-  installStatus.textContent = '';
-});
-
-// When user clicks install button
-installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) {
-    installStatus.textContent = 'Install prompt not ready yet, please try again later.';
-    return;
+  function isRunningInPWA() {
+    return (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
   }
-  deferredPrompt.prompt();          // Show browser install prompt
-  const choice = await deferredPrompt.userChoice;
-  if (choice.outcome === 'accepted') {
-    installStatus.textContent = 'Thank you for installing!';
-    installBtn.style.display = 'none'; // Hide button after install
-  } else {
-    installStatus.textContent = 'Installation dismissed.';
-  }
-  deferredPrompt = null;
-});
 
-// Hide button if app already installed
-window.addEventListener('appinstalled', () => {
-  installStatus.textContent = 'App installed!';
-  installBtn.style.display = 'none';
-});
+  // Show install button ONLY if in browser (not standalone or PWA)
+  window.addEventListener("load", () => {
+    if (!isRunningInPWA()) {
+      installBtn.style.display = "inline-block";
+    } else {
+      installBtn.style.display = "none";
+    }
+  });
 
-// Also hide button if already running in standalone mode
-if (window.matchMedia('(display-mode: standalone)').matches) {
-  installBtn.style.display = 'none';
-  } 
+  // Manual instructions on click
+  installBtn.addEventListener("click", () => {
+    installStatus.innerHTML = `
+      📲 <strong>To install this app:</strong><br>
+      1️⃣ Tap the <strong>three-dot menu</strong> (⋮) in your browser<br>
+      2️⃣ Tap <strong>"Add to Home screen"</strong><br>
+      3️⃣ Confirm and install! 🎉
+    `;
+  });
+
 </script>
 
 </body>
