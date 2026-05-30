@@ -5,26 +5,26 @@
   <title>Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="manifest" href="manifest.json" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="firebase-config.js">
-     </script>
+  <script src="firebase-config.js"></script>
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Poppins', sans-serif;
-      margin: 0;
       background: linear-gradient(135deg, #1e3c72, #2a5298);
       color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 20px;
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
     }
     .floating-about {
       position: fixed;
-      top: 3px;
+      top: 15px;
       left: 15px;
       background: rgba(87, 55, 155, 0.45);
       backdrop-filter: blur(10px);
@@ -35,8 +35,6 @@
       display: flex;
       align-items: center;
       cursor: pointer;
-      user-select: none;
-      transition: background-color 0.3s ease;
       z-index: 9999;
       font-size: 14px;
     }
@@ -48,17 +46,19 @@
       display: flex;
       justify-content: space-between;
       width: 100%;
-      max-width: 900px;
-      margin-bottom: 20px;
+      max-width: 1200px;
+      margin-bottom: 15px;
       align-items: center;
+      flex-shrink: 0;
     }
     .tab-buttons {
       display: flex;
       gap: 10px;
       justify-content: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       width: 100%;
-      max-width: 900px;
+      max-width: 1200px;
+      flex-shrink: 0;
     }
     .tab-buttons button {
       background: rgba(255, 255, 255, 0.2);
@@ -76,21 +76,20 @@
       background: #ff9800;
       color: #000;
     }
-    /* Notification badge on Messages button */
     #messagesBtn .badge {
       position: absolute;
-      top: 5px;
-      right: 8px;
-      background: red;
+      top: -5px;
+      right: -8px;
+      background: #2ecc71;
       color: white;
-      font-size: 12px;
-      padding: 2px 6px;
+      font-size: 11px;
+      padding: 2px 7px;
       border-radius: 12px;
       font-weight: bold;
     }
     .tab {
       display: none;
-      max-width: 900px;
+      max-width: 1200px;
       width: 100%;
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
@@ -98,205 +97,196 @@
       border-radius: 12px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
       flex-grow: 1;
+      height: calc(100vh - 160px);
+      overflow-y: auto;
     }
-    .tab.active {
-      display: block;
-    }
+    .tab.active { display: block; }
     
-#installBtn {
-  background: rgba(255, 100, 0, 0.5); /* Darker orange glassy */
-  color: #fff;
-  font-weight: bold;
-  font-size: 1.1rem;
-  padding: 12px 28px;
-  border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 20px rgba(255, 120, 0, 0.6);
-  cursor: pointer;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-}
-#installBtn:hover {
-  background: rgba(255, 80, 0, 0.6);
-  box-shadow: 0 6px 25px rgba(255, 100, 0, 0.7);
-}
-
-/* Neon orange instruction box */
-.glass-box.neon-orange {
-  margin-top: 10px;
-  padding: 16px 20px;
-  border-radius: 15px;
-  background: rgba(255, 120, 0, 0.1);
-  border: 1px solid rgba(255, 165, 0, 0.3);
-  box-shadow: 0 0 18px rgba(255, 140, 0, 0.7);
-  color: #fff;
-  backdrop-filter: blur(12px);
-  transition: all 0.3s ease;
-}
-
-.glass-box.neon-orange h4 {
-  color: #ffc266;
-  margin-bottom: 10px;
-      }
-    .info-box {
-      background: rgba(255,255,255,0.2);
-      border-left: 4px solid orange;
-      padding: 15px;
-      margin-top: 20px;
+    /* Split Pane Layout Specially Designed for Messages Tab */
+    .split-layout {
+      display: flex;
+      height: 100%;
       border-radius: 10px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.15);
     }
-    .info-box h4 {
-      margin: 0 0 10px;
-      color: #fff;
+    .sidebar {
+      width: 320px;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      background: rgba(0,0,0,0.2);
     }
-    .info-box ul {
-      margin: 0;
-      padding-left: 20px;
-      color: #eee;
+    .sidebar-header {
+      padding: 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-weight: bold;
     }
-    /* Footer */
-    footer {
-      text-align: center;
-      font-size: 14px;
-      color: #ccc;
-      margin-top: 20px;
-      user-select: none;
+    .profile-list {
+      flex: 1;
+      overflow-y: auto;
     }
-    footer a {
-      color: #00bcd4;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* Chat list container */
-    #chatList > div {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.1);
+    .profile-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.2s;
       position: relative;
     }
-    #chatList > div.unseen {
-      background: #fff6c1;
+    .profile-item:hover, .profile-item.active {
+      background: rgba(255, 255, 255, 0.15);
     }
-    /* Chat messages bubbles */
-    .chatbox > div {
-      margin: 5px 0;
-      padding: 10px;
-      border-radius: 10px;
-      color: #000;
-      max-width: 70%;
-      word-wrap: break-word;
+    .profile-item.unseen-item {
+      background: rgba(255, 246, 193, 0.15);
     }
-    .chatbox > div.fromUser {
-      background: #b2ebf2;
-      align-self: flex-end;
+    .avatar-wrapper {
+      position: relative;
+      margin-right: 12px;
+      flex-shrink: 0;
     }
-    .chatbox > div.fromOther {
-      background: #ffe082;
-      align-self: flex-start;
-    }
-    /* Settings buttons */
-    #settingsButtons {
+    .blank-avatar {
+      width: 44px;
+      height: 44px;
+      background: #eee;
+      border-radius: 50%;
       display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
+      align-items: center;
+      justify-content: center;
+      color: #555;
     }
-    #settingsButtons button {
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      background: #7f8c8d;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      border: 2px solid #2a5298;
+    }
+    .status-dot.online { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
+    
+    .profile-info { flex: 1; min-width: 0; }
+    .profile-top { display: flex; justify-content: space-between; align-items: center; }
+    .profile-name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .profile-time { font-size: 11px; color: #ccc; }
+    .profile-preview { font-size: 12px; color: #ddd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px; }
+    
+    .item-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; margin-left: 8px; }
+    .pin-btn { background: none; border: none; cursor: pointer; opacity: 0.4; transition: 0.2s; font-size: 14px; }
+    .pin-btn:hover, .pin-btn.pinned { opacity: 1; }
+    .action-menu-btn { background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; }
+    .unread-indicator-dot { width: 8px; height: 8px; background: #2ecc71; border-radius: 50%; }
+
+    /* Right Chat Workspace Panel */
+    .chat-workspace {
       flex: 1;
-      padding: 10px;
-      font-weight: bold;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      background: #ff9800;
-      color: #000;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255, 255, 255, 0.02);
+      position: relative;
     }
-    #settingsButtons button.active {
-      background: #4caf50;
-      color: #fff;
+    .blank-workspace {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #ccc;
+      font-style: italic;
     }
-    /* Form sections */
-    .settings-section {
-      display: none;
-      max-width: 600px;
-      margin: 0 auto;
+    .workspace-header {
+      padding: 15px 20px;
+      background: rgba(0,0,0,0.2);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .settings-section.active {
-      display: block;
+    .workspace-header h4 { font-size: 16px; font-weight: 600; }
+    .workspace-header p { font-size: 12px; color: #ddd; }
+    
+    .chatbox {
+      flex: 1; padding: 15px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 8px;
+      background: rgba(0,0,0,0.05);
+      contain: content;
     }
-    .settings-section input {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0 12px;
-      border-radius: 8px;
-      border: none;
+    .chatbox > div {
+      padding: 10px 14px; border-radius: 14px; color: #000;
+      max-width: 70%; word-wrap: break-word; font-size: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
+    .chatbox > div.fromUser { background: #b2ebf2; align-self: flex-end; border-bottom-right-radius: 2px; }
+    .chatbox > div.fromOther { background: #ffe082; align-self: flex-start; border-bottom-left-radius: 2px; }
+    .chatbox .msg-meta { font-size: 10px; color: #666; margin-top: 4px; text-align: right; font-family: monospace; }
+
+    .workspace-footer {
+      padding: 12px 15px; background: rgba(0,0,0,0.2);
+      display: flex; gap: 10px; align-items: center;
+    }
+    .workspace-footer textarea {
+      flex: 1; padding: 10px 15px; border-radius: 20px; border: none;
+      background: rgba(255,255,255,0.15); color: #fff; height: 40px;
+      resize: none; outline: none; font-family: inherit; font-size: 14px;
+    }
+    .workspace-footer textarea::placeholder { color: #ddd; }
+    .workspace-footer button {
+      background: #00bcd4; color: #fff; border: none; padding: 0 20px;
+      border-radius: 20px; cursor: pointer; font-weight: bold; height: 40px;
+    }
+
+    /* Context menu settings drop downs */
+    .context-menu {
+      position: absolute; right: 15px; top: 40px; background: #333;
+      border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 10; display: none;
+    }
+    .context-menu button {
+      background: none; border: none; color: #ff5252; padding: 8px 16px;
+      cursor: pointer; width: 100%; text-align: left; font-family: inherit; font-weight: bold;
+    }
+
+    /* General Settings Styling Elements */
+    #settingsButtons { display: flex; gap: 15px; margin-bottom: 20px; }
+    #settingsButtons button {
+      flex: 1; padding: 10px; font-weight: bold; border-radius: 8px; border: none;
+      cursor: pointer; transition: 0.3s; background: #ff9800; color: #000;
+    }
+    #settingsButtons button.active { background: #4caf50; color: #fff; }
+    .settings-section { display: none; max-width: 600px; margin: 0 auto; }
+    .settings-section.active { display: block; }
+    .settings-section input { width: 100%; padding: 10px; margin: 6px 0 12px; border-radius: 8px; border: none; }
     .settings-section button.submit-btn {
-      background: #2196f3;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
+      background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;
     }
-    .settings-section button.submit-btn:hover {
-      background: #1976d2;
+    .info-box { background: rgba(255,255,255,0.1); border-left: 4px solid orange; padding: 15px; margin-top: 15px; border-radius: 10px; }
+    .info-box h4 { color: #ff9800; margin-bottom: 5px; }
+    .info-box ul { padding-left: 20px; color: #eee; font-size: 14px; }
+    #installBtn {
+      background: rgba(255, 100, 0, 0.5); color: #fff; font-weight: bold; padding: 10px 20px;
+      border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(8px); cursor: pointer;
     }
-    #status {
-      margin-top: 10px;
-      font-weight: bold;
+    .glass-box.neon-orange {
+      margin-top: 10px; padding: 15px; border-radius: 12px; background: rgba(255, 120, 0, 0.1);
+      border: 1px solid rgba(255, 165, 0, 0.3); box-shadow: 0 0 15px rgba(255, 140, 0, 0.5);
     }
-    /* Responsive */
-    @media (max-width: 600px) {
-      main h1 {
-        font-size: 2.2rem;
-      }
-      main button#getLinkBtn,
-      main button#installBtn {
-        width: 100%;
-        font-size: 1.3rem;
-      }
-      section.features {
-        padding: 20px 15px;
-      }
+    footer { text-align: center; font-size: 13px; color: #ccc; margin-top: 15px; flex-shrink: 0; }
+    footer a { color: #00bcd4; text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
-  <button id="notifToggleBtn" onclick="toggleNotifications()">🔔 Enable Notifications</button>
 
-<a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer" class="floating-about" aria-label="Visit Mahiur Rahman's Instagram">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f3402f" width="24px" height="24px" style="vertical-align:middle;">
+<a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer" class="floating-about">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f3402f" width="20px" height="20px" style="vertical-align:middle;">
     <path d="M7.75 2A5.75 5.75 0 002 7.75v8.5A5.75 5.75 0 007.75 22h8.5A5.75 5.75 0 0022 16.25v-8.5A5.75 5.75 0 0016.25 2h-8.5zm0 1.5h8.5A4.25 4.25 0 0120.5 7.75v8.5a4.25 4.25 0 01-4.25 4.25h-8.5A4.25 4.25 0 013.5 16.25v-8.5A4.25 4.25 0 017.75 3.5zM12 7a5 5 0 100 10 5 5 0 000-10zm0 1.5a3.5 3.5 0 110 7 3.5 3.5 0 010-7zm4.75-2.5a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0z"/>
   </svg>
-  <span style="margin-left:6px; color:#e4405f; font-weight:600; font-family:sans-serif; vertical-align: middle;">About Me</span>
+  <span style="margin-left:6px; color:#e4405f; font-weight:600;">About Me</span>
 </a>
 
 <div class="top-bar">
   <h2 id="welcome">Welcome, User</h2>
-  <button onclick="logout()" 
-    style="
-      padding: 4px 12px;
-      font-size: 14px;
-      border-radius: 20px;
-      background: #f44336;
-      color: white;
-      border: none;
-      cursor: pointer;
-      min-width: 80px;
-      height: 30px;
-      line-height: 22px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    ">
-    Sign Out
-  </button>
+  <button onclick="logout()" style="padding: 4px 12px; font-size: 13px; border-radius: 20px; background: #f44336; color: white; border: none; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">Sign Out</button>
 </div>
 
 <div class="tab-buttons">
@@ -307,43 +297,59 @@
 
 <div id="link" class="tab active">
   <h3>Your Chat Link</h3>
-  <input type="text" id="shareLink" readonly style="width:100%; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: none;" />
-  <button onclick="copyLink()">Copy Link</button>
+  <input type="text" id="shareLink" readonly style="width:100%; padding: 10px; border-radius: 8px; margin: 10px 0; border: none; background: rgba(255,255,255,0.2); color: #fff; font-size: 15px;" />
+  <button onclick="copyLink()" style="padding: 8px 16px; background:#ff9800; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Copy Link</button>
 
   <div class="info-box">
     <h4>🎯 Add it to your Instagram Profile</h4>
     <ul>
-      <li>Open your Instagram app.</li>
-      <li>Go to your profile page.</li>
-      <li>Tap “Edit Profile”.</li>
-      <li>Paste your chat link into the “Website” field.</li>
-      <li>Save changes. Now it’s visible on your profile!</li>
+      <li>Open your Instagram app, go to your profile, and tap “Edit Profile”.</li>
+      <li>Paste your link into the “Website” or "Links" field and save changes!</li>
     </ul>
   </div>
-
   <div class="info-box">
     <h4>🎯 Add it to your Instagram Story</h4>
     <ul>
-      <li>Create a new story.</li>
-      <li>Tap the “Link” sticker.</li>
-      <li>Paste your chat link there.</li>
-      <li>Place the sticker wherever you want on the story.</li>
-      <li>Share your story. Followers can now tap to chat!</li>
+      <li>Create a new story, select the “Link” sticker option, and paste your URL.</li>
     </ul>
   </div>
 </div>
 
-<div id="messages" class="tab">
-  <h3>Your Messages</h3>
-  <div id="chatList"></div>
+<div id="messages" class="tab" style="padding: 0;">
+  <div class="split-layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">Conversations</div>
+      <div class="profile-list" id="profileListContainer">
+        </div>
+    </aside>
 
-  <div id="chatView" style="display:none; margin-top: 20px;">
-    <button onclick="closeChat()" style="margin-bottom: 10px;">✖️ Close Chat</button>
-    <div class="chatbox" id="chatBox" style="background: rgba(255, 255, 255, 0.2); padding: 10px; border-radius: 10px; height: 200px; overflow-y: auto; margin-bottom: 10px; display:flex; flex-direction: column;"></div>
-    <div style="display: flex; gap: 10px;">
-      <textarea id="replyBox" placeholder="Reply..." style="flex: 1; padding: 10px; border-radius: 8px; border: none;"></textarea>
-      <button onclick="sendReplyGlobal()" style="background: #00bcd4; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Send</button>
-    </div>
+    <main class="chat-workspace" id="chatWorkspacePanel">
+      <div class="blank-workspace" id="blankWorkspaceState">
+        Select a conversation profile from the sidebar layout to view message history.
+      </div>
+      
+      <div id="activeWorkspaceContent" style="display: none; flex-direction: column; flex: 1; min-height: 0;">
+        <div class="workspace-header">
+          <div>
+            <h4 id="activeChatTitle">Device User</h4>
+            <p id="activeChatPresence">Last seen: checking status...</p>
+          </div>
+          <div style="position: relative;">
+            <button onclick="toggleContextDropdown(event)" class="action-menu-btn">⋮</button>
+            <div class="context-menu" id="headerContextMenu">
+              <button onclick="deleteCurrentChat()">🗑️ Delete Chat</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="chatbox" id="mainChatBox"></div>
+        
+        <div class="workspace-footer">
+          <textarea id="mainReplyInput" placeholder="Type an anonymous response..."></textarea>
+          <button onclick="sendWorkspaceReply()">Send</button>
+        </div>
+      </div>
+    </main>
   </div>
 </div>
 
@@ -354,23 +360,38 @@
     <button id="btnChangePassword" onclick="showSettingsSection('password')">Change Password</button>
   </div>
 
-  <!-- Change Username Section -->
   <div id="sectionUsername" class="settings-section active">
     <input type="text" id="newUsername" placeholder="New Username" />
     <input type="password" id="currentPasswordForUsername" placeholder="Current Password" />
     <button class="submit-btn" onclick="changeUsername()">Change Username</button>
-    <p id="statusUsername" style="color:#fff;"></p>
+    <p id="statusUsername" style="margin-top:10px;"></p>
   </div>
 
-  <!-- Change Password Section -->
   <div id="sectionPassword" class="settings-section">
     <input type="password" id="prevPassword" placeholder="Previous Password" />
     <input type="password" id="newPassword" placeholder="New Password (min 6 chars, letters & numbers)" />
     <input type="password" id="confirmPassword" placeholder="Confirm New Password" />
     <button class="submit-btn" onclick="changePassword()">Change Password</button>
-    <p id="statusPassword" style="color:#fff;"></p>
+    <p id="statusPassword" style="margin-top:10px;"></p>
   </div>
 </div>
+
+<div id="installContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end;">
+  <button id="installBtn">📥 Install App</button>
+  <div id="installInstructions" class="glass-box neon-orange" style="display:none; width: 260px; text-align: left;">
+    <h4 style="color:#ffc266; margin-bottom: 5px;">📲 Application Installation</h4>
+    <ol style="padding-left:15px; font-size:13px; color:#eee;">
+      <li>Tap browser menu icon **(⋮)**.</li>
+      <li>Select **"Add to Home screen"**.</li>
+    </ol>
+  </div>
+</div>
+
+<footer>
+  Developed by Mahiur Rahman.  
+  <a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer">About Me</a>
+</footer>
+
 <script>
   const user = localStorage.getItem("loggedInUser");
   if (!user) window.location.href = "login.html";
@@ -378,7 +399,21 @@
   document.getElementById("welcome").textContent = "Welcome, " + user;
   document.getElementById("shareLink").value = location.origin + "/chat.html?user=" + user;
 
- // Tabs
+  let currentActiveDevice = null;
+  let activeChatFirebaseRef = null;
+  let cachedProfilesData = {};
+  let pinnedDevicesArray = JSON.parse(localStorage.getItem("pinnedDashboardDevices") || "[]");
+
+  // Pulse Admin presence loop track
+  function pulseAdminPresence() {
+    if (user) {
+      firebase.database().ref("users/" + user + "/lastSeen").set(Date.now());
+    }
+  }
+  pulseAdminPresence();
+  setInterval(pulseAdminPresence, 30000);
+
+  // Tab switcher
   function showTab(tabId, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
@@ -386,7 +421,6 @@
     btn.classList.add('active');
   }
 
-  // Settings sections
   function showSettingsSection(section) {
     document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
     document.getElementById('section' + capitalize(section)).classList.add('active');
@@ -394,26 +428,64 @@
     document.getElementById('btnChangePassword').classList.toggle('active', section === 'password');
   }
 
-  function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  function logout() {
-    localStorage.removeItem("loggedInUser");
-    window.location.href = "index.html";
-  }
-
+  function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
+  function logout() { localStorage.removeItem("loggedInUser"); window.location.href = "index.html"; }
   function copyLink() {
     const input = document.getElementById("shareLink");
     input.select();
     navigator.clipboard.writeText(input.value).then(() => alert("Link copied!"));
   }
 
-  // Notifications and chat list
+  // Monitor Dynamic Live Structural Profiles Stream Tree
   const listRef = firebase.database().ref("chats/" + user);
-  let previousUnseen = 0;
+  
+  listRef.on("value", snapshot => {
+    const data = snapshot.val() || {};
+    let globalUnseenCounter = 0;
+    
+    // Clear and build local operational object cache arrays
+    const updatedDevicesList = Object.keys(data);
+    
+    // Remove deleted nodes from cache list
+    Object.keys(cachedProfilesData).forEach(id => {
+      if (!updatedDevicesList.includes(id)) delete cachedProfilesData[id];
+    });
 
-  function updateNotifBadge(count) {
+    updatedDevicesList.forEach(deviceId => {
+      const chatNode = data[deviceId] || {};
+      const messagesTree = chatNode.messages || {};
+      const msgKeys = Object.keys(messagesTree);
+      
+      let lastTextSnippet = "No messages available.";
+      let lastMessageTimeRaw = "";
+      let chronologicalTimestamp = 0;
+
+      if(msgKeys.length > 0) {
+        const lastMsgObj = messagesTree[msgKeys[msgKeys.length - 1]];
+        lastTextSnippet = lastMsgObj.text || "";
+        lastMessageTimeRaw = lastMsgObj.time || "";
+        chronologicalTimestamp = new Date(lastMessageTimeRaw).getTime() || msgKeys.length;
+      }
+
+      const isSeenState = chatNode.hasOwnProperty("seen") ? chatNode.seen : true;
+      if (!isSeenState) globalUnseenCounter++;
+
+      // Cache elements payload profile items blocks mapping
+      cachedProfilesData[deviceId] = {
+        id: deviceId,
+        lastText: lastTextSnippet,
+        lastTime: lastMessageTimeRaw,
+        sortTime: chronologicalTimestamp,
+        unseen: !isSeenState,
+        activePulse: !isSeenState
+      };
+    });
+
+    updateNotifBadgeLabel(globalUnseenCounter);
+    processAndRenderLeftSidebar();
+  });
+
+  function updateNotifBadgeLabel(count) {
     const badge = document.getElementById("notifBadge");
     if(count > 0){
       badge.style.display = "inline-block";
@@ -423,173 +495,210 @@
     }
   }
 
-  listRef.on("value", snap => {
-    const chatList = document.getElementById("chatList");
-    chatList.innerHTML = "";
-    const data = snap.val();
-    let unseenCount = 0;
+  function processAndRenderLeftSidebar() {
+    const container = document.getElementById("profileListContainer");
+    if(!container) return;
 
-    if (!data) {
-      chatList.innerHTML = "<p>No messages yet.</p>";
-      updateNotifBadge(0);
+    let sortingArray = Object.values(cachedProfilesData);
+
+    // Dynamic prioritization matrix pipeline handling Pinned indices and timestamp weights
+    sortingArray.sort((a, b) => {
+      const aPinned = pinnedDevicesArray.includes(a.id);
+      const bPinned = pinnedDevicesArray.includes(b.id);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return b.sortTime - a.sortTime;
+    });
+
+    container.innerHTML = "";
+
+    if(sortingArray.length === 0) {
+      container.innerHTML = "<p style='padding:15px; text-align:center; color:#ccc; font-size:14px;'>No messages available.</p>";
       return;
     }
 
-    // Sort chats by last message time descending
-    const sortedEntries = Object.entries(data).sort((a, b) => {
-      const msgsA = a[1].messages;
-      const msgsB = b[1].messages;
-      const lastTimeA = msgsA ? Object.values(msgsA).slice(-1)[0]?.time : 0;
-      const lastTimeB = msgsB ? Object.values(msgsB).slice(-1)[0]?.time : 0;
-      return new Date(lastTimeB) - new Date(lastTimeA);
+    sortingArray.forEach(profile => {
+      const isCurrentlyOpen = (currentActiveDevice === profile.id);
+      const isPinned = pinnedDevicesArray.includes(profile.id);
+      
+      // Parse layout string timestamps cleanly 
+      let timeDisplayStr = "";
+      if(profile.lastTime.includes(",")) {
+        timeDisplayStr = profile.lastTime.split(",")[1].trim();
+      } else {
+        timeDisplayStr = profile.lastTime;
+      }
+
+      const itemDiv = document.createElement("div");
+      itemDiv.className = `profile-item ${isCurrentlyOpen ? 'active' : ''} ${profile.unseen ? 'unseen-item' : ''}`;
+      itemDiv.setAttribute("onclick", `selectAndLoadActiveChat('${profile.id}')`);
+
+      itemDiv.innerHTML = `
+        <div class="avatar-wrapper">
+          <div class="blank-avatar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          </div>
+          <div class="status-dot ${profile.activePulse ? 'online' : ''}" id="dot-${profile.id}"></div>
+        </div>
+        <div class="profile-info">
+          <div class="profile-top">
+            <span class="profile-name">${profile.id}</span>
+            <span class="profile-time">${timeDisplayStr}</span>
+          </div>
+          <div class="profile-preview">${escapeHTMLString(profile.lastText)}</div>
+        </div>
+        <div class="item-controls">
+          <button class="pin-btn ${isPinned ? 'pinned' : ''}" onclick="toggleDevicePinState(event, '${profile.id}')">📌</button>
+          ${profile.unseen ? `<span class="unread-indicator-dot"></span>` : ''}
+        </div>
+      `;
+      container.appendChild(itemDiv);
+      
+      // Hook async status updates to profile nodes dynamically
+      attachPresenceListenerToNode(profile.id);
     });
-
-    for (let [deviceId, chat] of sortedEntries) {
-      const messages = chat.messages;
-      if (!messages) continue;
-
-      const seen = chat.seen || false;
-      if (!seen) unseenCount++;
-
-      const container = document.createElement("div");
-      container.className = !seen ? "unseen" : "";
-      container.innerHTML = `
-  <div style="display: flex; justify-content: space-between; align-items: center;">
-    <strong style="font-size:16px;">${deviceId}</strong>
-    <div style="position: relative;">
-      <button onclick="toggleMenu(this)" style="background: none; border: none; font-size: 20px; color: white; cursor: pointer;">⋮</button>
-      <div class="menu" style="display: none; position: absolute; right: 0; background: #333; border-radius: 6px; padding: 5px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.3); z-index: 999;">
-        <button onclick="deleteChat('${deviceId}')" style="background: none; border: none; color: red; padding: 8px 16px; cursor: pointer; width: 100%; text-align: left;">🗑️ Delete</button>
-      </div>
-    </div>
-  </div>
-  <button onclick="toggleChat('${deviceId}')" style="margin-top:8px;background:#4caf50;color:white;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;">Open</button>
-  
-  <div id="chat-${deviceId}" class="inline-chatbox" style="display:none; margin-top:10px;">
-    <div class="chatbox" id="chatBox-${deviceId}" style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; max-height: 200px; overflow-y: auto; margin-bottom: 10px;"></div>
-    <div style="display: flex; gap: 10px;">
-      <textarea id="replyBox-${deviceId}" placeholder="Reply..." style="flex: 1; padding: 10px; border-radius: 8px; border: none;"></textarea>
-      <button onclick="sendReply('${deviceId}')" style="background: #00bcd4; color: #fff; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;">Send</button>
-    </div>
-  </div>
-`;
-      chatList.appendChild(container);
-    }
-
-    updateNotifBadge(unseenCount);
-
-    // Show notification if new unseen messages AND window is hidden
-    if (unseenCount > previousUnseen && Notification.permission === "granted" && document.hidden) {
-      new Notification("🔔 New Message!", {
-        body: `${unseenCount} new message(s) in your inbox.`,
-        icon: '' // optionally add icon url here
-      });
-    }
-    previousUnseen = unseenCount;
-  });
-
-  function toggleMenu(btn) {
-    const menu = btn.parentElement.querySelector(".menu");
-    // Close all menus first
-    document.querySelectorAll(".menu").forEach(m => m.style.display = "none");
-    menu.style.display = menu.style.display === "block" ? "none" : "block";
   }
 
-  function toggleChat(deviceId) {
-    document.querySelectorAll('.inline-chatbox').forEach(c => c.style.display = "none"); // hide all
-    const thisChat = document.getElementById(`chat-${deviceId}`);
-    thisChat.style.display = "block";
+  function attachPresenceListenerToNode(deviceId) {
+    firebase.database().ref("users/" + deviceId + "/lastSeen").once("value", snap => {
+      const val = snap.val();
+      const dot = document.getElementById("dot-" + deviceId);
+      if(!dot) return;
+      if(val) {
+        const diff = Date.now() - val;
+        if(diff < 60000) {
+          dot.classList.add("online");
+        } else {
+          dot.classList.remove("online");
+        }
+      }
+    });
+  }
 
-    const chatBox = document.getElementById(`chatBox-${deviceId}`);
+  function selectAndLoadActiveChat(deviceId) {
+    currentActiveDevice = deviceId;
+    
+    document.getElementById("blankWorkspaceState").style.display = "none";
+    document.getElementById("activeWorkspaceContent").style.display = "flex";
+    document.getElementById("activeChatTitle").textContent = deviceId;
+
+    // Flush and reset seen indices state markers directly on activation hook click
+    firebase.database().ref(`chats/${user}/${deviceId}/seen`).set(true);
+
+    if (activeChatFirebaseRef) activeChatFirebaseRef.off();
+
+    const chatBox = document.getElementById("mainChatBox");
     chatBox.innerHTML = "";
 
-    const msgRef = firebase.database().ref(`chats/${user}/${deviceId}/messages`);
-    msgRef.off();
-    msgRef.on("child_added", snap => {
+    activeChatFirebaseRef = firebase.database().ref(`chats/${user}/${deviceId}/messages`);
+    
+    // Smooth high speed viewport rendering tracking assignments
+    activeChatFirebaseRef.on("child_added", snap => {
       const msg = snap.val();
       const div = document.createElement("div");
-      div.style = `background:${msg.from === user ? '#b2ebf2' : '#ffe082'};margin:5px;padding:10px;border-radius:10px;color:#000;`;
-      div.innerHTML = `<strong>${msg.from}</strong> (${msg.time}): <br>${msg.text}`;
+      div.className = (msg.from === user) ? "fromUser" : "fromOther";
+      
+      let displayTime = msg.time;
+      if(msg.time && msg.time.includes(",")) {
+        displayTime = msg.time.split(",")[1].trim();
+      }
+
+      div.innerHTML = `<div>${escapeHTMLString(msg.text)}</div><div class="msg-meta">${displayTime}</div>`;
       chatBox.appendChild(div);
       chatBox.scrollTop = chatBox.scrollHeight;
     });
 
-    firebase.database().ref(`chats/${user}/${deviceId}/seen`).set(true);
+    // Listen to current open frame targeted accurate presence states
+    firebase.database().ref("users/" + deviceId + "/lastSeen").on("value", snap => {
+      const val = snap.val();
+      document.getElementById("activeChatPresence").textContent = "Status: " + calculateRelativeTimeAgo(val);
+    });
+
+    processAndRenderLeftSidebar();
   }
 
-  function sendReply(deviceId) {
-    const input = document.getElementById(`replyBox-${deviceId}`);
-    const msg = input.value.trim();
-    if (!msg) return;
+  function sendWorkspaceReply() {
+    const input = document.getElementById("mainReplyInput");
+    const msgText = input.value.trim();
+    if (!msgText || !currentActiveDevice) return;
+    
     const now = new Date().toLocaleString();
-    firebase.database().ref(`chats/${user}/${deviceId}/messages`).push({
+    
+    firebase.database().ref(`chats/${user}/${currentActiveDevice}/messages`).push({
       from: user,
-      text: msg,
+      text: msgText,
       time: now
     });
+    
     input.value = "";
-    firebase.database().ref("notifications").push({
-      to: deviceId, // anonymous user's device ID
-      message: msg,
-      time: now
-    });
   }
 
-  function deleteChat(id) {
-    if (confirm("Delete this chat?")) {
-      firebase.database().ref("chats/" + user + "/" + id).remove();
+  // Handle Enter keystroke events for desktop interface
+  document.getElementById("mainReplyInput").addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendWorkspaceReply();
+    }
+  });
+
+  function toggleDevicePinState(event, id) {
+    event.stopPropagation();
+    if (pinnedDevicesArray.includes(id)) {
+      pinnedDevicesArray = pinnedDevicesArray.filter(item => item !== id);
+    } else {
+      pinnedDevicesArray.push(id);
+    }
+    localStorage.setItem("pinnedDashboardDevices", JSON.stringify(pinnedDevicesArray));
+    processAndRenderLeftSidebar();
+  }
+
+  function toggleContextDropdown(e) {
+    e.stopPropagation();
+    const menu = document.getElementById("headerContextMenu");
+    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+  }
+
+  function deleteCurrentChat() {
+    if (currentActiveDevice && confirm("Permanently remove this chat log session?")) {
+      firebase.database().ref("chats/" + user + "/" + currentActiveDevice).remove();
+      document.getElementById("activeWorkspaceContent").style.display = "none";
+      document.getElementById("blankWorkspaceState").style.display = "flex";
+      currentActiveDevice = null;
     }
   }
 
-  let activeChat = "";
-  function openChat(id) {
-    activeChat = id;
-    document.getElementById("chatView").style.display = "block";
-    const box = document.getElementById("chatBox");
-    box.innerHTML = "";
-    const msgRef = firebase.database().ref("chats/" + user + "/" + id + "/messages");
-    msgRef.off();
+  // Dynamic Relative Timestamp Processing Algorithm
+  function calculateRelativeTimeAgo(timestamp) {
+    if(!timestamp) return "Offline";
+    const parsedDate = new Date(timestamp);
+    if(isNaN(parsedDate.getTime())) return "Offline";
 
-    msgRef.on("child_added", snap => {
-      const msg = snap.val();
-      const div = document.createElement("div");
-      div.className = msg.from === user ? "fromUser" : "fromOther";
-      div.innerHTML = `<strong>${msg.from}</strong> (${msg.time}): <br>${msg.text}`;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-    });
+    const currentMoment = new Date();
+    const discrepancyMs = currentMoment.getTime() - parsedDate.getTime();
+    if(discrepancyMs < 0) return "Active now";
 
-    // Mark chat as seen
-    firebase.database().ref("chats/" + user + "/" + id + "/seen").set(true);
+    const convertedMins = Math.floor(discrepancyMs / 60000);
+    const convertedHrs = Math.floor(convertedMins / 60);
 
-    // Clear notification badge for this chat
-    previousUnseen = 0;
-    updateNotifBadge(0);
+    if(convertedMins < 1) return "Active now";
+    if(convertedMins < 60) return `Active ${convertedMins}m ago`;
+    if(convertedHrs < 24) return `Active ${convertedHrs}h ago`;
+
+    const baselineNow = new Date(currentMoment.getFullYear(), currentMoment.getMonth(), currentMoment.getDate());
+    const baselineThen = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate());
+    const localizedDaysDiff = Math.round((baselineNow - baselineThen) / (1000 * 60 * 60 * 24));
+
+    if(localizedDaysDiff === 1) return "Active yesterday";
+    return `Active ${localizedDaysDiff} days ago`;
   }
 
-  function closeChat() {
-    document.getElementById("chatView").style.display = "none";
-    activeChat = "";
+  function escapeHTMLString(text) {
+    const wrapper = document.createElement('div');
+    wrapper.textContent = text;
+    return wrapper.innerHTML;
   }
 
-  function sendReplyGlobal() {
-    const msg = document.getElementById("replyBox").value.trim();
-    if (!msg || !activeChat) return;
-    const now = new Date().toLocaleString();
-    firebase.database().ref("chats/" + user + "/" + activeChat + "/messages").push({
-      from: user,
-      text: msg,
-      time: now
-    });
-    document.getElementById("replyBox").value = "";
-    firebase.database().ref("notifications").push({
-      to: activeChat, // anonymous user's device ID
-      message: msg,
-      time: now
-    });
-  }
-
-  // Change username function
+  // Manage Username Data Shifts
   function changeUsername() {
     const newU = document.getElementById("newUsername").value.trim();
     const pass = document.getElementById("currentPasswordForUsername").value.trim();
@@ -599,29 +708,21 @@
 
     const oldRef = firebase.database().ref("users/" + user);
     oldRef.once("value").then(snapshot => {
-      if (!snapshot.exists()) {
-        status.textContent = "❌ Current user not found.";
-        return;
-      }
-      if (snapshot.val().password !== pass) {
-        status.textContent = "❌ Incorrect password.";
-        return;
-      }
+      if (!snapshot.exists()) { status.textContent = "❌ User profile lost."; return; }
+      if (snapshot.val().password !== pass) { status.textContent = "❌ Authentication password failed."; return; }
+      
       const newRef = firebase.database().ref("users/" + newU);
       newRef.once("value").then(snap => {
         if (snap.exists()) {
-          status.textContent = "❌ Username already taken.";
+          status.textContent = "❌ Username already claimed by another node.";
         } else {
-          // Copy user data to new username node
-          newRef.set({ password: pass, lastSeen: new Date().toISOString() }).then(() => {
-            // Move chats
+          newRef.set({ password: pass, lastSeen: Date.now() }).then(() => {
             firebase.database().ref("chats/" + user).once("value").then(data => {
               firebase.database().ref("chats/" + newU).set(data.val() || {}).then(() => {
-                // Remove old data
                 firebase.database().ref("chats/" + user).remove();
                 oldRef.remove();
                 localStorage.setItem("loggedInUser", newU);
-                alert("Username updated. Refreshing...");
+                alert("Username shifting complete. Reloading...");
                 location.reload();
               });
             });
@@ -631,7 +732,7 @@
     });
   }
 
-  // Change password function
+  // Manage Password Rotations
   function changePassword() {
     const prev = document.getElementById("prevPassword").value.trim();
     const newP = document.getElementById("newPassword").value.trim();
@@ -639,212 +740,41 @@
     const status = document.getElementById("statusPassword");
     status.textContent = "";
 
-    if (!prev || !newP || !confirmP) {
-      status.textContent = "❌ Fill all fields.";
-      return;
-    }
-    if (newP.length < 6) {
-      status.textContent = "❌ Password must be at least 6 characters.";
-      return;
-    }
-    // Must include letters and numbers
-    if (!(/[a-zA-Z]/.test(newP) && /\d/.test(newP))) {
-      status.textContent = "❌ Password must include letters and numbers.";
-      return;
-    }
-    if (newP !== confirmP) {
-      status.textContent = "❌ New passwords do not match.";
-      return;
-    }
+    if (!prev || !newP || !confirmP) { status.textContent = "❌ Complete all requested target parameters."; return; }
+    if (newP.length < 6) { status.textContent = "❌ Lower boundary constraint warning (Minimum 6 characters)."; return; }
+    if (!(/[a-zA-Z]/.test(newP) && /\d/.test(newP))) { status.textContent = "❌ Alpha-numeric syntax error layout required."; return; }
+    if (newP !== confirmP) { status.textContent = "❌ Input field parity confirmation match error."; return; }
 
     const userRef = firebase.database().ref("users/" + user);
     userRef.once("value").then(snapshot => {
-      if (!snapshot.exists()) {
-        status.textContent = "❌ User not found.";
-        return;
-      }
-      if (snapshot.val().password !== prev) {
-        status.textContent = "❌ Previous password is incorrect.";
-        return;
-      }
-      // Update password
+      if (!snapshot.exists()) { status.textContent = "❌ Account context record missing."; return; }
+      if (snapshot.val().password !== prev) { status.textContent = "❌ Validation parameter mismatch."; return; }
+      
       userRef.update({ password: newP }).then(() => {
         status.style.color = "lightgreen";
-        status.textContent = "✅ Password updated successfully.";
-        // Clear fields
+        status.textContent = "✅ Operational values rewritten successfully.";
         document.getElementById("prevPassword").value = "";
         document.getElementById("newPassword").value = "";
         document.getElementById("confirmPassword").value = "";
-      }).catch(() => {
-        status.textContent = "❌ Error updating password.";
       });
     });
   }
 
-  // Request notification permission on page load
-  if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-    Notification.requestPermission();
-  }
-
-  // Close menus if clicking outside
-  document.addEventListener("click", (e) => {
-    if (!e.target.matches(".menu, button[onclick^='toggleMenu']")) {
-      document.querySelectorAll(".menu").forEach(m => m.style.display = "none");
-    }
+  // Close context toggles if hitting empty layout space
+  document.addEventListener("click", () => {
+    document.getElementById("headerContextMenu").style.display = "none";
   });
-</script>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
-<script>
-  const messaging = firebase.messaging();
-
-  navigator.serviceWorker.register('firebase-messaging-sw.js')
-    .then(reg => {
-      messaging.useServiceWorker(reg);
-      return messaging.getToken({
-        vapidKey: 'BOa3k5chES3HKrSL8mPdaorhf_TEiTSruz_rXCFBeZxAGjUyKTIwAWmLi39RTyZPxSPo_nAGGCqSqMFiF68EnU0' // replace this
-      });
-    })
-    .then(currentToken => {
-      if (currentToken) {
-        console.log("FCM Token:", currentToken);
-        firebase.database().ref("tokens/" + user).set(currentToken);
-      } else {
-        console.warn('No registration token available.');
-      }
-    })
-    .catch(err => {
-      console.error('An error occurred while retrieving token.', err);
-    });
-</script>
-
-<footer>
-  Developed by Mahiur Rahman.  
-  <a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer">About Me</a>
-</footer>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
-
-<script>
-  const messaging = firebase.messaging();
-  const user = localStorage.getItem("loggedInUser");
-
-  // Ensure service worker is registered first
-  let swRegistration = null;
-  navigator.serviceWorker.register('firebase-messaging-sw.js')
-    .then(reg => {
-      swRegistration = reg;
-      messaging.useServiceWorker(swRegistration);
-      updateNotifButton(); // update label on load
-    });
-
-  // Save/remove token from Firebase
-  function saveTokenToDatabase(token) {
-    if (!user) return;
-    firebase.database().ref("tokens/" + user).set(token);
-  }
-
-  function removeTokenFromDatabase() {
-    if (!user) return;
-    firebase.database().ref("tokens/" + user).remove();
-  }
-
-  // Toggle notification handler
-  function toggleNotifications() {
-    const btn = document.getElementById("notifToggleBtn");
-
-    if (localStorage.getItem("notifEnabled") === "true") {
-      localStorage.setItem("notifEnabled", "false");
-      removeTokenFromDatabase();
-      btn.textContent = "🔔 Enable Notifications";
-      alert("🔕 Notifications disabled.");
-    } else {
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          messaging.getToken({
-            vapidKey: 'BOa3k5chES3HKrSL8mPdaorhf_TEiTSruz_rXCFBeZxAGjUyKTIwAWmLi39RTyZPxSPo_nAGGCqSqMFiF68EnU0',
-            serviceWorkerRegistration: swRegistration
-          }).then(currentToken => {
-            if (currentToken) {
-              saveTokenToDatabase(currentToken);
-              localStorage.setItem("notifEnabled", "true");
-              btn.textContent = "🔕 Disable Notifications";
-              alert("🔔 Notifications enabled!");
-            } else {
-              alert("⚠️ Failed to get FCM token.");
-            }
-          }).catch(err => {
-            console.error("Token error:", err);
-            alert("❌ Error getting token.");
-          });
-        } else {
-          alert("❌ Notification permission denied.");
-        }
-      });
-    }
-  }
-
-  function updateNotifButton() {
-    const btn = document.getElementById("notifToggleBtn");
-    if (Notification.permission === "granted" && localStorage.getItem("notifEnabled") === "true") {
-      btn.textContent = "🔕 Disable Notifications";
-    } else {
-      btn.textContent = "🔔 Enable Notifications";
-    }
-  }
-
-  // Update label when page loads
-  window.addEventListener("load", updateNotifButton);
-  firebase.database().ref("notifications").on("child_added", snap => {
-  const data = snap.val();
-  const currentUser = localStorage.getItem("loggedInUser");
-
-  if (data.to === currentUser && Notification.permission === "granted") {
-    new Notification("New Message", {
-      body: data.message
-    });
-  }
-});
-
-      </script>
-<!-- Install App Button and Instructions -->
-<div id="installContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-  <button id="installBtn">📥 Install App</button>
-  <div id="installInstructions" class="glass-box neon-orange" style="display:none;">
-    <h4>📲 How to Install This App</h4>
-    <ol>
-      <li>Tap the <b>⋮</b> (3-dot menu) in the top-right corner of your browser.</li>
-      <li>Tap <b>"Add to Home screen"</b>.</li>
-      <li>Click on Install. <b>"Anonymous Chatroom"</b>.</li>
-    </ol>
-    <p style="font-size: 14px; color: #eee;">✅ You’ll get an app icon on your home screen!</p>
-  </div>
-</div>
-
-<script>
+  // Action Install Box toggles
   document.getElementById('installBtn').addEventListener('click', () => {
     const inst = document.getElementById('installInstructions');
     inst.style.display = inst.style.display === 'none' ? 'block' : 'none';
   });
-
-  // Hide button if already installed
   window.addEventListener('load', () => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    if (isStandalone) {
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
       document.getElementById('installContainer').style.display = 'none';
     }
   });
 </script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(reg => {
-        console.log('✅ Service Worker registered:', reg);
-      })
-      .catch(err => {
-        console.error('❌ Service Worker registration failed:', err);
-      });
-  }
-</script>
 </body>
-  </html>
+      </html>
