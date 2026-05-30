@@ -127,7 +127,7 @@
     /* Telegram Style Messenger Bright Architecture Layout */
     .tg-messenger-frame {
       display: flex;
-      height: 650px;
+      height: 550px;
       background: var(--bg-card);
       border-radius: 16px;
       overflow: hidden;
@@ -583,7 +583,7 @@
         <div class="tg-chatbox-history" id="tgChatboxHistory"></div>
         
         <div class="tg-workspace-input-bar">
-          <textarea id="tgMessageInputArea" placeholder="Write an anonymous reply message..."></textarea>
+          <textarea id="tgMessageInputArea" placeholder="Write a reply..."></textarea>
           <button class="tg-send-action-btn" onclick="commitSecureOutgoingReply()">SEND</button>
         </div>
       </div>
@@ -901,12 +901,25 @@
     const referenceDatabaseNodePointer = firebase.database().ref(`chats/${user}/${deviceId}/messages`);
     referenceDatabaseNodePointer.off();
     
-    firebase.database().ref(`chats/${user}/${deviceId}`).once("value", rootNodeSnapshot => {
-      const innerVal = rootNodeSnapshot.val() || {};
-      const actualPresenceStamp = innerVal.visitedTime || "";
-      const readablePresenceStr = formulateHumanTimeMetrics(actualPresenceStamp);
-      document.getElementById("tgHeaderTargetPresence").textContent = readablePresenceStr ? "Last Visited: " + readablePresenceStr : "Status synced logs";
-    });
+    // Fetch last visitor node update check metadata rule matching parameters log values
+firebase.database().ref(`chats/${user}/${deviceId}`).once("value", rootNodeSnapshot => {
+  const innerVal = rootNodeSnapshot.val() || {};
+  
+  // Checks for visitedTime, and falls back to the last message time if visitedTime is missing
+  let actualPresenceStamp = innerVal.visitedTime || "";
+  if (!actualPresenceStamp && innerVal.messages) {
+    const msgsArray = Object.values(innerVal.messages);
+    actualPresenceStamp = msgsArray[msgsArray.length - 1]?.time || "";
+  }
+  
+  // If no timestamp is found anywhere, fall back to the ID timestamp structure or active status
+  if (!actualPresenceStamp) {
+    actualPresenceStamp = deviceId.split('_')[1] || "";
+  }
+
+  const readablePresenceStr = formulateHumanTimeMetrics(actualPresenceStamp);
+  document.getElementById("tgHeaderTargetPresence").textContent = readablePresenceStr ? "Last Visited: " + readablePresenceStr : "Active now";
+});
 
     referenceDatabaseNodePointer.on("child_added", childSnapshotData => {
       const dataPayloadRecord = childSnapshotData.val();
