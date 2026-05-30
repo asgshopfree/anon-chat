@@ -110,6 +110,8 @@
       chatRef = firebase.database().ref("chats/" + targetUser + "/" + deviceId + "/messages");
       const seenRef = firebase.database().ref("chats/" + targetUser + "/" + deviceId + "/seen");
       seenRef.set(false);
+      // Add this line directly underneath seenRef.set(false);
+firebase.database().ref("chats/" + targetUser + "/" + deviceId + "/visitedTime").set(Date.now());
 
       // Enter Key Feature for Desktop Devices
       document.getElementById("message").addEventListener("keydown", function (e) {
