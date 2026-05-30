@@ -4,10 +4,9 @@
   <meta charset="UTF-8" />
   <title>Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="styleshesendet" href="style.css" />
+  <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
   <script src="firebase-config.js"></script>
   <style>
     * { box-sizing: border-box; }
@@ -41,6 +40,7 @@
       backdrop-filter: blur(8px);
       margin-bottom: 20px;
       display: flex; flex-direction: column; gap: 8px;
+      contain: content; /* Improves layout rendering performance for fast loading */
     }
     .message { max-width: 75%; padding: 14px 20px; border-radius: 20px; font-size: 15px; line-height: 1.4; box-shadow: 1px 3px 8px rgba(0,0,0,0.18); word-wrap: break-word; position: relative; }
     .message.you { align-self: flex-end; background: #00bcd4; color: #fff; border-bottom-right-radius: 4px; }
@@ -56,9 +56,10 @@
       color: #fff;
       backdrop-filter: blur(8px);
       margin-bottom: 15px;
+      resize: none;
     }
     textarea#message::placeholder { color: #ddd; }
-    button.send-btn, button#getChatroomBtn, button#notifToggleBtn {
+    button.send-btn, button#getChatroomBtn {
       border: none; font-weight: 700; border-radius: 25px; cursor: pointer; font-size: 18px; user-select: none;
     }
     button.send-btn {
@@ -66,9 +67,6 @@
     }
     button#getChatroomBtn {
       background: #ff9800; color: #000; padding: 14px 30px; width: 220px; margin: 0 auto 40px;
-    }
-    button#notifToggleBtn {
-      padding: 8px 20px; background: #ff9800; color: #000; margin-bottom: 10px;
     }
     footer { text-align: center; font-size: 14px; color: #ccc; margin-top: auto; margin-bottom: 10px; }
     footer a { color: #00bcd4; text-decoration: none; font-weight: 600; }
@@ -78,7 +76,7 @@
   <h2 id="header">Chat with ...</h2>
   <p id="lastSeen">Last seen: loading...</p>
   <div class="instruction">🔁 Please revisit this site later to check for replies.</div>
-  <button id="notifToggleBtn" onclick="toggleNotifications()">🔔 Enable Notifications</button>
+  
   <div class="chatbox" id="chatBox"></div>
   <textarea id="message" placeholder="Type your message..."></textarea>
   <button class="send-btn" onclick="sendMessage()">Send</button>
@@ -93,7 +91,6 @@
     let targetUser = "";
     let chatRef = null;
     let deviceId = "";
-    const messaging = firebase.messaging();
 
     window.onload = function () {
       const params = new URLSearchParams(location.search);
@@ -114,6 +111,15 @@
       const seenRef = firebase.database().ref("chats/" + targetUser + "/" + deviceId + "/seen");
       seenRef.set(false);
 
+      // Enter Key Feature for Desktop Devices
+      document.getElementById("message").addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault(); // Prevents line break
+          sendMessage();
+        }
+      });
+
+      // Optimized Chat Loading
       chatRef.on("child_added", snap => {
         const msg = snap.val();
         const chatBox = document.getElementById("chatBox");
@@ -131,32 +137,21 @@
         }
 
         chatBox.appendChild(div);
+        
+        // Fast instant scrolling execution
         chatBox.scrollTop = chatBox.scrollHeight;
-
-        if (document.hidden && Notification.permission === "granted" && msg.from !== "Anonymous" && msg.from !== deviceId) {
-          new Notification("New reply from Chatroom", { body: msg.text });
-        }
       });
 
+      // Updated Accurate Dynamic Active Status
       firebase.database().ref("users/" + targetUser + "/lastSeen").on("value", snap => {
         const val = snap.val();
-        if (!val) return;
-        const lastSeenTime = new Date(val);
-        const diff = Date.now() - lastSeenTime.getTime();
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(minutes / 60);
-        let status = "";
-        if (minutes < 1) status = "Active now";
-        else if (hours < 1) status = `Active ${minutes} min ago`;
-        else status = `Active ${hours} hr ago`;
-        document.getElementById("lastSeen").textContent = "Last seen: " + status;
+        if (!val) {
+          document.getElementById("lastSeen").textContent = "Last seen: Offline";
+          return;
+        }
+        
+        document.getElementById("lastSeen").textContent = "Last seen: " + formatLastSeen(val);
       });
-
-      if (Notification.permission === 'granted' && localStorage.getItem("notifEnabled") === "true") {
-        document.getElementById("notifToggleBtn").textContent = "🔕 Disable Notifications";
-      } else {
-        document.getElementById("notifToggleBtn").textContent = "🔔 Enable Notifications";
-      }
     };
 
     function sendMessage() {
@@ -166,11 +161,6 @@
       const now = new Date().toLocaleString();
       chatRef.push({ from: "Anonymous", text: text, time: now });
       textEl.value = "";
-      firebase.database().ref("notifications").push({
-  to: targetUser, // admin username
-  message: text,
-  time: now
-});
     }
 
     function escapeHTML(text) {
@@ -179,55 +169,31 @@
       return div.innerHTML;
     }
 
-    function saveTokenToDatabase(token) {
-      const user = new URLSearchParams(location.search).get("user");
-      if (!user) return;
-      firebase.database().ref("tokens/" + user).set(token);
-    }
+    // Comprehensive Active Status Algorithm
+    function formatLastSeen(timestamp) {
+      const lastSeenTime = new Date(timestamp);
+      if (isNaN(lastSeenTime.getTime())) return "Offline";
 
-    function removeTokenFromDatabase() {
-      const user = new URLSearchParams(location.search).get("user");
-      if (!user) return;
-      firebase.database().ref("tokens/" + user).remove();
-    }
+      const now = new Date();
+      const diffMs = now.getTime() - lastSeenTime.getTime();
+      
+      if (diffMs < 0) return "Active now"; // Guard clause for system clock slight desyncs
 
-    function toggleNotifications() {
-      if (localStorage.getItem("notifEnabled") === "true") {
-        localStorage.setItem("notifEnabled", "false");
-        removeTokenFromDatabase();
-        document.getElementById("notifToggleBtn").textContent = "🔔 Enable Notifications";
-        alert("🔕 Notifications disabled.");
-      } else {
-        Notification.requestPermission().then(permission => {
-          if (permission === "granted") {
-            messaging.getToken({
-              vapidKey: 'BOa3k5chES3HKrSL8mPdaorhf_TEiTSruz_rXCFBeZxAGjUyKTIwAWmLi39RTyZPxSPo_nAGGCqSqMFiF68EnU0'
-            }).then(currentToken => {
-              if (currentToken) {
-                saveTokenToDatabase(currentToken);
-                localStorage.setItem("notifEnabled", "true");
-                document.getElementById("notifToggleBtn").textContent = "🔕 Disable Notifications";
-                alert("🔔 Notifications enabled!");
-              } else {
-                alert("⚠️ Failed to get token.");
-              }
-            });
-          } else {
-            alert("❌ Notification permission denied.");
-          }
-        });
-      }
-    }
-    firebase.database().ref("notifications").on("child_added", snap => {
-  const data = snap.val();
-  const deviceId = localStorage.getItem("deviceId");
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHrs = Math.floor(diffMins / 60);
 
-  if (data.to === deviceId && Notification.permission === "granted") {
-    new Notification("Reply from Admin", {
-      body: data.message
-    });
-  }
-});
+      if (diffMins < 1) return "Active now";
+      if (diffMins < 60) return `Active ${diffMins} min ago`;
+      if (diffHrs < 24) return `Active ${diffHrs} hr ago`;
+
+      // Calculate days based on calendar dates to accurately find "Yesterday"
+      const midnightNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const midnightThen = new Date(lastSeenTime.getFullYear(), lastSeenTime.getMonth(), lastSeenTime.getDate());
+      const diffDays = Math.round((midnightNow - midnightThen) / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) return "Active yesterday";
+      return `Active ${diffDays} days ago`;
+    }
   </script>
 </body>
 </html>
