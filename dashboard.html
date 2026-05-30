@@ -10,15 +10,29 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <style>
+    :root {
+      --bg-primary: #f4f7f6;
+      --bg-card: #ffffff;
+      --text-main: #2c3e50;
+      --text-muted: #7f8c8d;
+      --accent-color: #248855;
+      --accent-hover: #1e7246;
+      --border-color: #e2e8f0;
+      --tg-sidebar-bg: #ffffff;
+      --tg-workspace-bg: #f8fafc;
+      --bubble-other: #f1f5f9;
+      --bubble-user: #dcfce7;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
       margin: 0;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: #fff;
+      background: var(--bg-primary);
+      color: var(--text-main);
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      padding: 15px;
       min-height: 100vh;
       box-sizing: border-box;
     }
@@ -26,12 +40,11 @@
       position: fixed;
       top: 15px;
       left: 15px;
-      background: rgba(255, 255, 255, 0.07);
-      backdrop-filter: blur(10px);
+      background: var(--bg-card);
       padding: 8px 16px;
       border-radius: 30px;
-      border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
       text-decoration: none;
       display: flex;
       align-items: center;
@@ -41,8 +54,8 @@
       z-index: 9999;
     }
     .floating-about:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: translateY(-2px);
+      background: #f8fafc;
+      transform: translateY(-1px);
     }
     .top-bar {
       display: flex;
@@ -55,32 +68,31 @@
     }
     .tab-buttons {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       justify-content: center;
       margin-bottom: 25px;
       width: 100%;
       max-width: 1100px;
     }
     .tab-buttons button {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #fff;
-      padding: 12px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 12px 20px;
       border-radius: 12px;
       cursor: pointer;
       font-weight: 500;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       gap: 8px;
     }
     .tab-buttons button:hover,
     .tab-buttons button.active {
-      background: #248855;
+      background: var(--accent-color);
       color: #fff;
-      box-shadow: 0 4px 15px rgba(36, 136, 85, 0.4);
-      border-color: #2eaf6d;
+      box-shadow: 0 4px 12px rgba(36, 136, 85, 0.2);
+      border-color: var(--accent-color);
     }
     .btn-badge {
       background: #e74c3c;
@@ -96,11 +108,10 @@
       display: none;
       max-width: 1100px;
       width: 100%;
-      background: rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       border-radius: 16px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
       overflow: hidden;
       box-sizing: border-box;
     }
@@ -111,29 +122,32 @@
       padding: 25px;
     }
 
-    /* Telegram Style Messenger Architecture Layout */
+    /* Telegram Style Messenger Bright Architecture Layout */
     .tg-messenger-frame {
       display: flex;
       height: 650px;
-      background: rgba(23, 33, 43, 0.95);
+      background: var(--bg-card);
       border-radius: 16px;
       overflow: hidden;
+      position: relative;
     }
     .tg-sidebar {
       width: 340px;
-      border-right: 1px solid #101921;
+      border-right: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
-      background: #17212b;
+      background: var(--tg-sidebar-bg);
+      z-index: 5;
+      transition: transform 0.3s ease;
     }
     .tg-sidebar-header {
       padding: 15px;
-      background: #24303f;
-      border-bottom: 1px solid #101921;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border-color);
     }
     .msg-segments-nav {
       display: flex;
-      background: #101921;
+      background: #edf2f7;
       padding: 4px;
       border-radius: 8px;
       gap: 4px;
@@ -147,7 +161,7 @@
       font-size: 13px;
       cursor: pointer;
       transition: all 0.2s ease;
-      color: #7f91a4;
+      color: var(--text-muted);
       background: transparent;
       display: flex;
       align-items: center;
@@ -155,8 +169,9 @@
       gap: 6px;
     }
     .msg-segments-nav button.active-seg {
-      background: #2b5278;
-      color: #fff;
+      background: var(--bg-card);
+      color: var(--accent-color);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
     .tg-chat-roster {
       flex: 1;
@@ -167,27 +182,32 @@
       align-items: center;
       padding: 12px 15px;
       cursor: pointer;
-      border-bottom: 1px solid #101921;
+      border-bottom: 1px solid var(--border-color);
       transition: background 0.2s ease;
       gap: 12px;
       position: relative;
     }
     .tg-thread-item:hover {
-      background: #202b36;
+      background: #f8fafc;
     }
     .tg-thread-item.active-chat-item {
-      background: #2b5278 !important;
+      background: #f0fdf4 !important;
     }
     .avatar-wrapper {
       position: relative;
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       flex-shrink: 0;
+      background: #e2e8f0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .avatar-wrapper svg {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      fill: #94a3b8;
     }
     .tg-item-details {
       flex: 1;
@@ -202,17 +222,14 @@
     .tg-item-name {
       font-weight: 500;
       font-size: 14px;
-      color: #fff;
+      color: var(--text-main);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .tg-item-time {
       font-size: 11px;
-      color: #7f91a4;
-    }
-    .active-chat-item .tg-item-time {
-      color: #b0c4de;
+      color: var(--text-muted);
     }
     .tg-item-preview-row {
       display: flex;
@@ -221,15 +238,12 @@
     }
     .tg-item-snippet {
       font-size: 13px;
-      color: #7f91a4;
+      color: var(--text-muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       flex: 1;
       margin-right: 5px;
-    }
-    .active-chat-item .tg-item-snippet {
-      color: #e1eaf2;
     }
     .tg-indicator-pill-box {
       display: flex;
@@ -237,11 +251,11 @@
       gap: 6px;
     }
     .pin-icon-badge {
-      color: #64b5f6;
-      font-size: 14px;
+      color: #3b82f6;
+      font-size: 13px;
     }
     .tg-unseen-badge {
-      background: #4f9cd6;
+      background: var(--accent-color);
       color: #fff;
       font-size: 11px;
       font-weight: 600;
@@ -254,8 +268,9 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: #0e1621;
+      background: var(--tg-workspace-bg);
       position: relative;
+      transition: transform 0.3s ease;
     }
     .tg-workspace-placeholder {
       display: flex;
@@ -263,23 +278,40 @@
       align-items: center;
       justify-content: center;
       height: 100%;
-      color: #526777;
+      color: var(--text-muted);
+      padding: 20px;
+      text-align: center;
     }
     .tg-workspace-header {
-      padding: 10px 20px;
-      background: #17212b;
-      border-bottom: 1px solid #101921;
+      padding: 12px 20px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
+    }
+    .tg-mobile-back-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      font-size: 16px;
+      color: var(--accent-color);
+      cursor: pointer;
+      font-weight: 600;
+      padding: 4px 8px;
+      margin-right: 5px;
     }
     .tg-header-title {
       font-weight: 500;
       font-size: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .tg-header-subtitle {
       font-size: 12px;
-      color: #7f91a4;
+      color: var(--text-muted);
     }
     .tg-chatbox-history {
       flex: 1;
@@ -287,83 +319,84 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+      gap: 12px;
+      background: #f1f5f9;
     }
     .tg-bubble-msg {
-      max-width: 65%;
-      padding: 8px 14px;
-      border-radius: 12px;
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 16px;
       font-size: 14px;
       line-height: 1.4;
-      color: #fff;
+      color: var(--text-main);
       word-wrap: break-word;
       position: relative;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     .tg-bubble-msg.fromOther {
-      background: #182533;
+      background: var(--bubble-other);
       align-self: flex-start;
-      border-top-left-radius: 2px;
+      border-top-left-radius: 4px;
     }
     .tg-bubble-msg.fromUser {
-      background: #2b5278;
+      background: var(--bubble-user);
       align-self: flex-end;
-      border-top-right-radius: 2px;
+      border-top-right-radius: 4px;
     }
     .tg-bubble-time {
       font-size: 10px;
-      color: #7f91a4;
+      color: var(--text-muted);
       text-align: right;
       margin-top: 4px;
       display: block;
     }
     .tg-workspace-input-bar {
-      padding: 15px;
-      background: #17212b;
+      padding: 12px 15px;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-color);
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
     }
     .tg-workspace-input-bar textarea {
       flex: 1;
-      background: #101921;
-      border: 1px solid #24303f;
-      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
       padding: 10px 15px;
-      color: #fff;
+      color: var(--text-main);
       resize: none;
-      height: 22px;
+      height: 20px;
       font-family: inherit;
       font-size: 14px;
     }
     .tg-workspace-input-bar textarea:focus {
       outline: none;
-      border-color: #5288c1;
+      border-color: var(--accent-color);
+      background: var(--bg-card);
     }
     .tg-send-action-btn {
       background: transparent;
       border: none;
-      color: #5288c1;
+      color: var(--accent-color);
       cursor: pointer;
-      padding: 0 5px;
+      padding: 0 8px;
       font-weight: 600;
-      font-size: 15px;
+      font-size: 14px;
       transition: color 0.2s;
     }
     .tg-send-action-btn:hover {
-      color: #6ab3f8;
+      color: var(--accent-hover);
     }
 
-    /* Option utilities context menu style rules */
     .tg-item-action-trigger {
       background: none;
       border: none;
-      color: #7f91a4;
+      color: var(--text-muted);
       cursor: pointer;
       font-size: 16px;
       padding: 0 4px;
-      opacity: 0;
+      opacity: 0.6;
       transition: opacity 0.2s;
     }
     .tg-thread-item:hover .tg-item-action-trigger {
@@ -374,103 +407,117 @@
       position: absolute;
       right: 15px;
       top: 40px;
-      background: #1c2a38;
-      border: 1px solid #101921;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
       z-index: 100;
       overflow: hidden;
-      width: 110px;
+      width: 130px;
     }
     .context-dropdown-menu button {
       width: 100%;
-      padding: 8px 12px;
+      padding: 10px 12px;
       background: none;
       border: none;
-      color: #fff;
+      color: var(--text-main);
       text-align: left;
       cursor: pointer;
       font-size: 12px;
     }
     .context-dropdown-menu button:hover {
-      background: #243547;
+      background: #f1f5f9;
     }
 
-    /* Traditional features panels */
     #shareLink {
       width: 100%;
       padding: 12px;
       border-radius: 8px;
       margin-bottom: 12px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: #101921;
-      color: #fff;
+      border: 1px solid var(--border-color);
+      background: #f8fafc;
+      color: var(--text-main);
       font-family: inherit;
+      box-sizing: border-box;
     }
     .info-box {
-      background: rgba(255,255,255,0.03);
-      border-left: 4px solid #248855;
+      background: #f0fdf4;
+      border-left: 4px solid var(--accent-color);
       padding: 15px;
       margin-top: 20px;
       border-radius: 8px;
     }
-    .info-box h4 { margin: 0 0 10px; color: #2eaf6d; }
-    .info-box ul { margin: 0; padding-left: 20px; color: #ccc; }
+    .info-box h4 { margin: 0 0 10px; color: var(--accent-hover); }
+    .info-box ul { margin: 0; padding-left: 20px; color: var(--text-main); }
     
     #settingsButtons { display: flex; gap: 15px; margin-bottom: 25px; }
     #settingsButtons button {
-      flex: 1; padding: 12px; font-weight: 500; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
-      cursor: pointer; background: rgba(255,255,255,0.05); color: #fff;
+      flex: 1; padding: 12px; font-weight: 500; border-radius: 8px; border: 1px solid var(--border-color);
+      cursor: pointer; background: var(--bg-card); color: var(--text-main);
     }
-    #settingsButtons button.active { background: #2b5278; border-color: #5288c1; }
+    #settingsButtons button.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
     
     .settings-section { display: none; max-width: 600px; margin: 0 auto; }
     .settings-section.active { display: block; }
-    .settings-section input { width: 100%; padding: 12px; margin: 8px 0 16px; border-radius: 8px; border: 1px solid #24303f; background: #101921; color:#fff; box-sizing: border-box; }
+    .settings-section input { width: 100%; padding: 12px; margin: 8px 0 16px; border-radius: 8px; border: 1px solid var(--border-color); background: #f8fafc; color: var(--text-main); box-sizing: border-box; }
     .settings-section button.submit-btn {
-      background: #2b5278; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500;
+      background: var(--accent-color); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500;
     }
     
     .maintenance-wipers-box {
       margin-top: 40px;
       padding: 20px;
       border-radius: 12px;
-      background: rgba(231, 76, 60, 0.05);
-      border: 1px dashed #e74c3c;
+      background: #fef2f2;
+      border: 1px dashed #f87171;
     }
-    .maintenance-wipers-box h4 { color: #f19f96; margin-top: 0; }
+    .maintenance-wipers-box h4 { color: #991b1b; margin-top: 0; }
     .maintenance-wipers-box select, .maintenance-wipers-box input {
-      padding: 10px; border-radius: 8px; border: 1px solid #24303f; background: #101921; color:#fff; margin-right: 10px; margin-bottom: 12px;
+      padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); margin-right: 10px; margin-bottom: 12px; width: 100%; max-width: 260px; box-sizing: border-box;
     }
     .maintenance-wipers-box button {
-      background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500;
+      background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500;
     }
 
     #installBtn {
-      background: #248855; color: #fff; font-weight: 500; padding: 12px 24px; border-radius: 30px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(36,136,85,0.3);
+      background: var(--accent-color); color: #fff; font-weight: 500; padding: 12px 24px; border-radius: 30px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(36,136,85,0.2);
     }
     .glass-box.neon-orange {
-      margin-top: 15px; padding: 16px; border-radius: 12px; background: #17212b; border: 1px solid #24303f;
+      margin-top: 15px; padding: 16px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
 
-    footer { text-align: center; font-size: 13px; color: #7f91a4; margin-top: 30px; padding-bottom: 20px; }
-    footer a { color: #5288c1; text-decoration: none; }
+    footer { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 30px; padding-bottom: 20px; }
+    footer a { color: var(--accent-color); text-decoration: none; }
 
-    @media (max-width: 800px) {
-      .tg-messenger-frame { height: 550px; }
-      .tg-sidebar { width: 260px; }
+    /* Smart Mobile Fluid UI Styles Overrides */
+    @media (max-width: 768px) {
+      body { padding: 10px; }
+      .top-bar { margin-top: 60px; }
+      .tab-buttons { flex-wrap: wrap; }
+      .tab-buttons button { flex: 1 1 auto; padding: 10px 15px; font-size: 13px; justify-content: center; }
+      #settingsButtons { flex-direction: column; gap: 8px; }
+      .maintenance-wipers-box select, .maintenance-wipers-box input { max-width: 100%; }
+
+      /* Slide-In Message Framework on Mobile Devices */
+      .tg-messenger-frame { height: 80vh; overflow: hidden; position: relative; }
+      .tg-sidebar { width: 100%; position: absolute; height: 100%; left: 0; top: 0; transition: transform 0.25s ease-out; }
+      .tg-workspace { width: 100%; position: absolute; height: 100%; left: 0; top: 0; transform: translateX(100%); z-index: 10; transition: transform 0.25s ease-out; }
+      
+      .tg-messenger-frame.mobile-chat-active .tg-sidebar { transform: translateX(-100%); }
+      .tg-messenger-frame.mobile-chat-active .tg-workspace { transform: translateX(0); }
+      .tg-mobile-back-btn { display: inline-block; }
     }
   </style>
 </head>
 <body>
 
 <a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer" class="floating-about" aria-label="Visit Instagram">
-  <span style="color:#5288c1; font-weight:500; font-size: 13px;">ℹ️ About Developer</span>
+  <span style="color:var(--accent-color); font-weight:500; font-size: 13px;">ℹ️ About Developer</span>
 </a>
 
 <div class="top-bar">
   <h2 id="welcome" style="margin:0; font-weight:600; font-size:22px;">Loading...</h2>
-  <button onclick="logout()" style="padding: 6px 16px; font-size: 13px; border-radius: 20px; background: #e74c3c; color: white; border: none; cursor: pointer;">Sign Out</button>
+  <button onclick="logout()" style="padding: 8px 16px; font-size: 13px; border-radius: 20px; background: #dc2626; color: white; border: none; cursor: pointer; font-weight: 500;">Sign Out</button>
 </div>
 
 <div class="tab-buttons">
@@ -483,7 +530,7 @@
   <div class="pad-container">
     <h3>Your Anonymous Messenger URL Link</h3>
     <input type="text" id="shareLink" readonly />
-    <button onclick="copyLink()" style="background:#2b5278; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:500;">Copy Link Address</button>
+    <button onclick="copyLink()" style="background:var(--accent-color); color:white; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-weight:500;">Copy Link Address</button>
 
     <div class="info-box">
       <h4>🎯 Connect to Instagram Bio Profile</h4>
@@ -497,7 +544,7 @@
 </div>
 
 <div id="messages" class="tab">
-  <div class="tg-messenger-frame">
+  <div class="tg-messenger-frame" id="tgMessengerFrame">
     
     <div class="tg-sidebar">
       <div class="tg-sidebar-header">
@@ -517,14 +564,17 @@
     <div class="tg-workspace" id="tgWorkspaceArena">
       <div class="tg-workspace-placeholder" id="workspacePlaceholder">
         <span style="font-size: 40px; margin-bottom: 10px;">💬</span>
-        <div>Select a chat node thread conversation workspace element</div>
+        <div>Select a chat thread conversation to read messages</div>
       </div>
       
       <div id="activeChatContainer" style="display:none; flex-direction:column; height:100%;">
         <div class="tg-workspace-header">
-          <div>
-            <div class="tg-header-title" id="tgHeaderTargetId">Device Node Account</div>
-            <div class="tg-header-subtitle" id="tgHeaderTargetPresence">Status sync log</div>
+          <div style="display: flex; align-items: center; min-width: 0;">
+            <button class="tg-mobile-back-btn" onclick="exitMobileChatView()">← Back</button>
+            <div style="min-width: 0;">
+              <div class="tg-header-title" id="tgHeaderTargetId">Device Node Account</div>
+              <div class="tg-header-subtitle" id="tgHeaderTargetPresence">Status sync log</div>
+            </div>
           </div>
         </div>
         
@@ -565,13 +615,15 @@
 
     <div class="maintenance-wipers-box">
       <h4>⚠️ Maintenance & Node Cleaning tools</h4>
-      <p style="font-size: 13px; color: #ccc; margin-bottom: 15px;">Wipe matching database workspace records safely. Action parameters require security password validation checking confirmations.</p>
+      <p style="font-size: 13px; color: var(--text-main); margin-bottom: 15px;">Wipe matching database workspace records safely. Action parameters require security password validation checking confirmations.</p>
       <select id="purgeCategorySelect">
         <option value="visitors">Clear Visitor Tracking Logs (0 Messages Threads)</option>
         <option value="chats">Clear Conversations History (Active Thread Queues)</option>
       </select>
-      <input type="password" id="purgeAdminAuthPassword" placeholder="Account Password Check Verification" style="padding: 8px; width:220px;" />
-      <button onclick="executeSecureWiperSweep()">Flush Selected Workspace</button>
+      <input type="password" id="purgeAdminAuthPassword" placeholder="Account Password Check Verification" />
+      <div>
+        <button onclick="executeSecureWiperSweep()">Flush Selected Workspace</button>
+      </div>
       <p id="purgeStatusLogs" style="margin-top:10px; font-size:13px; font-weight:500;"></p>
     </div>
   </div>
@@ -588,19 +640,20 @@
   document.getElementById("welcome").textContent = "Hi, " + user;
   document.getElementById("shareLink").value = location.origin + "/chat.html?user=" + user;
 
-  // Pulse database presence track state ticks
   function pulsePresence() {
     if (user) firebase.database().ref("users/" + user + "/lastSeen").set(Date.now());
   }
   pulsePresence();
   setInterval(pulsePresence, 30000);
 
-  // Tab views toggle management logic block
   function showTab(tabId, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
     document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    
+    // Reset mobile views if changing tabs
+    if(tabId !== 'messages') exitMobileChatView();
   }
 
   function showSettingsSection(section) {
@@ -625,41 +678,23 @@
     firebase.database().ref("chats/" + user).once("value", snap => { processAndRenderRoster(snap.val()); });
   }
 
-  // Telegram Vector Color Profile Generator Utility Engine
-  function generateDynamicSvgAvatar(seedText) {
-    const paletteArr = [
-      ["#1abc9c", "#16a085"], ["#2ecc71", "#27ae60"], ["#3498db", "#2980b9"],
-      ["#9b59b6", "#8e44ad"], ["#f1c40f", "#f39c12"], ["#e67e22", "#d35400"],
-      ["#e74c3c", "#c0392b"], ["#34495e", "#2c3e50"], ["#ff8a00", "#da1b60"]
-    ];
-    let numericalHashValue = 0;
-    for (let i = 0; i < seedText.length; i++) {
-      numericalHashValue = seedText.charCodeAt(i) + ((numericalHashValue << 5) - numericalHashValue);
-    }
-    const colorPick = paletteArr[Math.abs(numericalHashValue) % paletteArr.length];
-    const userInitialsToken = seedText.substring(0, 2).toUpperCase();
-
+  // Pure Neutral Blank DP Avatar Asset SVG
+  function generateDynamicSvgAvatar() {
     return `
-      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="grad_${seedText}" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:${colorPick[0]};stop-opacity:1" />
-            <stop offset="100%" style="stop-color:${colorPick[1]};stop-opacity:1" />
-          </linearGradient>
-        </defs>
-        <circle cx="50" cy="50" r="50" fill="url(#grad_${seedText})" />
-        <text x="50" y="55" font-family="'Poppins', sans-serif" font-weight="600" font-size="34" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">${userInitialsToken}</text>
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
       </svg>
     `;
   }
 
-  // Human Time Logic: Active now, Yesterday, or precise Calendar dates
+  // Safe Timestamp parsing that rejects absolute raw random keys
   function formulateHumanTimeMetrics(timestamp) {
     if (!timestamp) return "";
+    
     let targetDate = new Date(timestamp);
-    if (isNaN(targetDate.getTime())) {
-      targetDate = new Date(Date.parse(timestamp));
-      if (isNaN(targetDate.getTime())) return timestamp;
+    // If invalid date instance or looks like a push key fallback hash trigger, do not parse as date
+    if (isNaN(targetDate.getTime()) || String(timestamp).startsWith('_') || String(timestamp).length < 6) {
+      return "";
     }
 
     const durationMs = Date.now() - targetDate.getTime();
@@ -671,7 +706,6 @@
     if (minutesCalculated < 1) return "Active now";
     if (minutesCalculated < 60) return `${minutesCalculated}m ago`;
     if (hoursCalculated < 24) {
-      // Confirm if it is technically within the boundary metrics of calendar day metrics
       const checkToday = new Date().getDate();
       if (targetDate.getDate() === checkToday) {
         return `${hoursCalculated}h ago`;
@@ -686,7 +720,6 @@
       return "Yesterday";
     }
 
-    // Format if more than 2 days ago
     const visualMonth = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     let displayHours = targetDate.getHours();
     const displayMins = targetDate.getMinutes().toString().padStart(2, '0');
@@ -697,7 +730,6 @@
     return `${targetDate.getDate()} ${visualMonth[targetDate.getMonth()]} at ${displayHours}:${displayMins} ${ampmMarker}`;
   }
 
-  // Central Processing Module Interface Node Controller logic execution
   const baseChatsPointer = firebase.database().ref("chats/" + user);
 
   function processAndRenderRoster(rootData) {
@@ -709,14 +741,13 @@
     let visitorsCategoryUnseenCount = 0;
 
     if (!rootData) {
-      listDisplayFrame.innerHTML = `<div style="text-align:center; padding:30px; color:#526777; font-size:13px;">Roster empty.</div>`;
+      listDisplayFrame.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">Roster empty.</div>`;
       syncBadgeUIElements(0, 0, 0);
       return;
     }
 
     const baseEntries = Object.entries(rootData);
 
-    // Calculate structural metrics before partitioning lists
     baseEntries.forEach(([dId, value]) => {
       const isThreadSeen = value.seen !== false;
       const totalMessagesAttached = value.messages ? Object.keys(value.messages).length : 0;
@@ -728,25 +759,26 @@
       }
     });
 
-    // Partition logic allocation mapping structure rules split sorting
     const workingSet = baseEntries.filter(([_, chatNode]) => {
       const msgCount = chatNode.messages ? Object.keys(chatNode.messages).length : 0;
       return currentInboxSegment === "chats" ? msgCount > 0 : msgCount === 0;
     });
 
-    // Telegram sorting priority engine rules: Pinned status takes absolute priority, then chronological sequence
     const finalSortedSet = workingSet.sort((a, b) => {
       const aIsPinned = pinnedChatNodesMap[a[0]] ? 1 : 0;
       const bIsPinned = pinnedChatNodesMap[b[0]] ? 1 : 0;
       if (aIsPinned !== bIsPinned) return bIsPinned - aIsPinned;
 
-      const timeStampA = a[1].messages ? Object.values(a[1].messages).slice(-1)[0]?.time : (a[1].visitedTime || a[0].split('_')[1] || 0);
-      const timeStampB = b[1].messages ? Object.values(b[1].messages).slice(-1)[0]?.time : (b[1].visitedTime || b[0].split('_')[1] || 0);
-      return new Date(timeStampB) - new Date(timeStampA);
+      const timeStampA = a[1].messages ? Object.values(a[1].messages).slice(-1)[0]?.time : (a[1].visitedTime || 0);
+      const timeStampB = b[1].messages ? Object.values(b[1].messages).slice(-1)[0]?.time : (b[1].visitedTime || 0);
+      
+      const timeA = (isNaN(new Date(timeStampA).getTime()) || !timeStampA) ? 0 : new Date(timeStampA).getTime();
+      const timeB = (isNaN(new Date(timeStampB).getTime()) || !timeStampB) ? 0 : new Date(timeStampB).getTime();
+      return timeB - timeA;
     });
 
     if (finalSortedSet.length === 0) {
-      listDisplayFrame.innerHTML = `<div style="text-align:center; padding:40px 15px; color:#526777; font-size:13px; font-style:italic;">No records inside this ${currentInboxSegment} track channel.</div>`;
+      listDisplayFrame.innerHTML = `<div style="text-align:center; padding:40px 15px; color:var(--text-muted); font-size:13px; font-style:italic;">No records inside this ${currentInboxSegment} track channel.</div>`;
     }
 
     finalSortedSet.forEach(([deviceIdKey, threadData]) => {
@@ -755,7 +787,7 @@
       const innerMessageKeysList = Object.keys(innerMessageCollection);
 
       let textSnippetDisplay = "Visited workspace node.";
-      let chronosTargetStamp = threadData.visitedTime || deviceIdKey.split('_')[1] || "";
+      let chronosTargetStamp = threadData.visitedTime || "";
 
       if (innerMessageKeysList.length > 0) {
         const structuralLastMsgObject = Object.values(innerMessageCollection).slice(-1)[0];
@@ -769,7 +801,7 @@
       elementNodeItem.className = `tg-thread-item ${selectedDeviceIdNode === deviceIdKey ? 'active-chat-item' : ''}`;
       elementNodeItem.setAttribute("data-node-id", deviceIdKey);
       
-      const identityProfileSvgCode = generateDynamicSvgAvatar(deviceIdKey);
+      const identityProfileSvgCode = generateDynamicSvgAvatar();
       const renderingPinnedFlagActive = pinnedChatNodesMap[deviceIdKey] === true;
 
       elementNodeItem.innerHTML = `
@@ -793,7 +825,7 @@
             <button onclick="event.stopPropagation(); invertPinnedStateConfiguration('${deviceIdKey}')">
               ${renderingPinnedFlagActive ? '📍 Unpin Thread' : '📌 Pin Conversation'}
             </button>
-            <button onclick="event.stopPropagation(); clearConversationThreadRecord('${deviceIdKey}')" style="color:#e74c3c;">🗑️ Delete Node</button>
+            <button onclick="event.stopPropagation(); clearConversationThreadRecord('${deviceIdKey}')" style="color:#dc2626;">🗑️ Delete Node</button>
           </div>
         </div>
       `;
@@ -845,11 +877,10 @@
     }
   }
 
-  // Workspace Dynamic Chat Messenger Core Messaging Panel Controller Router
+  // Workspace View Controller Router
   function initializeWorkspaceChannelView(deviceId) {
     selectedDeviceIdNode = deviceId;
     
-    // Highlight element locally
     document.querySelectorAll(".tg-thread-item").forEach(item => {
       item.classList.toggle("active-chat-item", item.getAttribute("data-node-id") === deviceId);
     });
@@ -859,17 +890,20 @@
     document.getElementById("tgHeaderTargetId").textContent = deviceId;
     document.getElementById("tgHeaderTargetPresence").textContent = "Synchronizing secure bridge...";
 
+    // Trigger sliding panel effect animations on mobile views
+    document.getElementById("tgMessengerFrame").classList.add("mobile-chat-active");
+
     const historicChatViewContainer = document.getElementById("tgChatboxHistory");
     historicChatViewContainer.innerHTML = "";
 
     const referenceDatabaseNodePointer = firebase.database().ref(`chats/${user}/${deviceId}/messages`);
     referenceDatabaseNodePointer.off();
     
-    // Fetch last visitor node update check metadata rule matching parameters log values
     firebase.database().ref(`chats/${user}/${deviceId}`).once("value", rootNodeSnapshot => {
       const innerVal = rootNodeSnapshot.val() || {};
-      const actualPresenceStamp = innerVal.visitedTime || deviceId.split('_')[1] || "";
-      document.getElementById("tgHeaderTargetPresence").textContent = "Last Visited: " + formulateHumanTimeMetrics(actualPresenceStamp);
+      const actualPresenceStamp = innerVal.visitedTime || "";
+      const readablePresenceStr = formulateHumanTimeMetrics(actualPresenceStamp);
+      document.getElementById("tgHeaderTargetPresence").textContent = readablePresenceStr ? "Last Visited: " + readablePresenceStr : "Status synced logs";
     });
 
     referenceDatabaseNodePointer.on("child_added", childSnapshotData => {
@@ -883,7 +917,11 @@
       if (dataPayloadRecord.time) {
         try {
           const parsingDate = new Date(dataPayloadRecord.time);
-          extractionDisplayTime = parsingDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          if(!isNaN(parsingDate.getTime())) {
+            extractionDisplayTime = parsingDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          } else {
+            extractionDisplayTime = String(dataPayloadRecord.time).split(',')[1]?.trim() || dataPayloadRecord.time;
+          }
         } catch(e) { extractionDisplayTime = dataPayloadRecord.time; }
       }
 
@@ -899,10 +937,19 @@
     firebase.database().ref(`chats/${user}/${deviceId}/seen`).set(true);
   }
 
+  function exitMobileChatView() {
+    document.getElementById("tgMessengerFrame").classList.remove("mobile-chat-active");
+  }
+
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".context-dropdown-menu").forEach(m => m.style.display = "none");
+  });
+
   function shutDownActiveWorkspaceView() {
     selectedDeviceIdNode = "";
     document.getElementById("workspacePlaceholder").style.display = "flex";
     document.getElementById("activeChatContainer").style.display = "none";
+    exitMobileChatView();
   }
 
   function commitSecureOutgoingReply() {
@@ -931,7 +978,6 @@
     return stringInput.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
-  // Traditional Core profile configurations processing rules engine modules
   function changeUsername() {
     const newU = document.getElementById("newUsername").value.trim();
     const pass = document.getElementById("currentPasswordForUsername").value.trim();
@@ -982,7 +1028,7 @@
       if (snapshot.val().password !== prev) { status.textContent = "❌ Old security credentials evaluation invalid."; return; }
       
       userRef.update({ password: newP }).then(() => {
-        status.style.color = "lightgreen";
+        status.style.color = "green";
         status.textContent = "✅ System password sequence modified successfully.";
         document.getElementById("prevPassword").value = "";
         document.getElementById("newPassword").value = "";
@@ -996,7 +1042,7 @@
     const adminPassToken = document.getElementById("purgeAdminAuthPassword").value.trim();
     const clearingLoggerNode = document.getElementById("purgeStatusLogs");
     
-    clearingLoggerNode.style.color = "#ff8a80";
+    clearingLoggerNode.style.color = "#dc2626";
     clearingLoggerNode.textContent = "";
 
     if (!adminPassToken) { clearingLoggerNode.textContent = "❌ Account checking password confirmation entry mandatory."; return; }
@@ -1025,18 +1071,12 @@
 
         if (counterTrackerIndex > 0) shutDownActiveWorkspaceView();
         document.getElementById("purgeAdminAuthPassword").value = "";
-        clearingLoggerNode.style.color = "lightgreen";
+        clearingLoggerNode.style.color = "green";
         clearingLoggerNode.textContent = `✅ Complete. Flushed ${counterTrackerIndex} stale tracking node slots safely out.`;
       });
     });
   }
 
-  // Handle outside document clicks context logic framework dismissals
-  document.addEventListener("click", () => {
-    document.querySelectorAll(".context-dropdown-menu").forEach(m => m.style.display = "none");
-  });
-
-  // Listener input keys tracking mapping submission binds
   document.addEventListener("keydown", (e) => {
     if (e.target && e.target.id === "tgMessageInputArea" && e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -1053,7 +1093,7 @@
   <button id="installBtn">📥 Install Application Tool</button>
   <div id="installInstructions" class="glass-box neon-orange" style="display:none; max-width:280px;">
     <h4 style="margin:0 0 8px 0; font-size:14px;">📲 Add to Home Screen</h4>
-    <ol style="margin:0; padding-left:18px; font-size:12px; color:#ccc; line-height:1.4;">
+    <ol style="margin:0; padding-left:18px; font-size:12px; color:var(--text-main); line-height:1.4;">
       <li>Open browser menu context selection pane.</li>
       <li>Click options target parameter element "Add to Home screen".</li>
     </ol>
