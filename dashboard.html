@@ -91,11 +91,11 @@
     }
     .tab-buttons button:hover,
     .tab-buttons button.active {
-      background: var(--accent-color);
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(36, 136, 85, 0.2);
-      border-color: var(--accent-color);
-    }
+  background: var(--accent-color);
+  color: #fff;
+  box-shadow: 0 0 15px var(--glow-color); /* Makes the button look radiant */
+  border-color: var(--accent-color);
+}
     .btn-badge {
       background: #e74c3c;
       color: #fff;
@@ -107,15 +107,15 @@
       text-align: center;
     }
     .tab {
-      display: none;
-      max-width: 1100px;
-      width: 100%;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-      overflow: hidden;
-      box-sizing: border-box;
+  display: none;
+  max-width: 1100px;
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid #bae6fd;          /* Soft blue border tint */
+  border-radius: 16px;
+  box-shadow: 0 10px 30px var(--glow-color); /* Activates the blue glow */
+  overflow: hidden;
+  box-sizing: border-box;
     }
     .tab.active {
       display: block;
@@ -1088,10 +1088,10 @@
 </script>
 
 <footer>
-  Dashboard Interface Architecture Platform developed by Mahiur Rahman. All Rights Reserved.
+  Developed by Mahiur Rahman. All Rights Reserved.
 </footer>
 
-<div id="installContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+<div id="installContainer" style="position: fixed; top: 15px; right: 110px; z-index: 9999;">
   <button id="installBtn">📥 Install Application Tool</button>
   <div id="installInstructions" class="glass-box neon-orange" style="display:none; max-width:280px;">
     <h4 style="margin:0 0 8px 0; font-size:14px;">📲 Add to Home Screen</h4>
