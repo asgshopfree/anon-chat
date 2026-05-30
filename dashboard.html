@@ -3,75 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <title>Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="manifest" href="manifest.json" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Poppins', sans-serif;
+      margin: 0;
       background: linear-gradient(135deg, #1e3c72, #2a5298);
       color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 15px;
-      height: 100vh;
-      overflow: hidden;
+      padding: 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
     .floating-about {
       position: fixed;
-      top: 12px;
-      left: 12px;
-      background: rgba(87, 55, 155, 0.6);
+      top: 10px;
+      left: 15px;
+      background: rgba(87, 55, 155, 0.45);
       backdrop-filter: blur(10px);
-      padding: 6px 12px;
+      padding: 8px 14px;
       border-radius: 30px;
-      box-shadow: 0 3px 10px rgba(228, 64, 95, 0.5);
+      box-shadow: 0 3px 10px rgba(228, 64, 95, 0.7);
       text-decoration: none;
       display: flex;
       align-items: center;
       cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
       z-index: 9999;
-      font-size: 13px;
+      font-size: 14px;
     }
-    /* Fixed Top Spacing Offset to prevent element overlap */
-    .app-wrapper {
-      width: 100%;
-      max-width: 1200px;
-      margin-top: 50px; 
-      display: flex;
-      flex-direction: column;
-      height: calc(100vh - 80px);
+    .floating-about:hover {
+      background: rgba(65, 85, 255, 0.3);
+      box-shadow: 0 5px 15px rgba(228, 64, 95, 0.9);
     }
     .top-bar {
       display: flex;
       justify-content: space-between;
       width: 100%;
+      max-width: 900px;
+      margin-top: 45px;
+      margin-bottom: 20px;
       align-items: center;
-      margin-bottom: 12px;
     }
-    .top-bar h2 { font-size: 20px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
     .tab-buttons {
       display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
       width: 100%;
+      max-width: 900px;
     }
     .tab-buttons button {
-      flex: 1;
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.2);
       border: none;
       color: #fff;
-      padding: 10px 5px;
+      padding: 10px 20px;
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
-      font-size: 14px;
-      transition: 0.2s;
+      transition: 0.3s;
       position: relative;
     }
     .tab-buttons button:hover,
@@ -79,705 +77,547 @@
       background: #ff9800;
       color: #000;
     }
-    #messagesBtn .badge {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: #e74c3c;
-      color: white;
-      font-size: 10px;
-      padding: 1px 6px;
-      border-radius: 10px;
-      font-weight: bold;
-    }
     .tab {
       display: none;
+      max-width: 900px;
       width: 100%;
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
-      padding: 15px;
+      padding: 20px;
       border-radius: 12px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
       flex-grow: 1;
-      height: calc(100% - 110px);
-      overflow-y: auto;
+      box-sizing: border-box;
     }
-    .tab.active { display: flex; flex-direction: column; }
+    .tab.active {
+      display: block;
+    }
     
-    /* Device Responsive Split Pane Layout Frame */
-    .split-layout {
+    /* Segmented Navigation Toggles inside the Messages tab */
+    .msg-segments-nav {
       display: flex;
-      height: 100%;
-      width: 100%;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    .msg-segments-nav button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      color: #fff;
+    }
+    .msg-segments-nav button#segChatsBtn { background: #00bcd4; color: #000; }
+    .msg-segments-nav button#segVisitorsBtn { background: #e91e63; color: #fff; }
+    .msg-segments-nav button.inactive-seg { opacity: 0.4; background: rgba(255,255,255,0.15) !important; color: #fff !important; }
+
+    #installBtn {
+      background: rgba(255, 100, 0, 0.5); 
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.1rem;
+      padding: 12px 28px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 20px rgba(255, 120, 0, 0.6);
+      cursor: pointer;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    #installBtn:hover {
+      background: rgba(255, 80, 0, 0.6);
+      box-shadow: 0 6px 25px rgba(255, 100, 0, 0.7);
+    }
+
+    .glass-box.neon-orange {
+      margin-top: 10px;
+      padding: 16px 20px;
+      border-radius: 15px;
+      background: rgba(255, 120, 0, 0.1);
+      border: 1px solid rgba(255, 165, 0, 0.3);
+      box-shadow: 0 0 18px rgba(255, 140, 0, 0.7);
+      color: #fff;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+    }
+    .glass-box.neon-orange h4 {
+      color: #ffc266;
+      margin-bottom: 10px;
+    }
+    .info-box {
+      background: rgba(255,255,255,0.2);
+      border-left: 4px solid orange;
+      padding: 15px;
+      margin-top: 20px;
       border-radius: 10px;
-      overflow: hidden;
-      background: rgba(0, 0, 0, 0.2);
     }
-    .sidebar {
-      width: 320px;
-      display: flex;
-      flex-direction: column;
-      background: rgba(0,0,0,0.25);
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
-      flex-shrink: 0;
+    .info-box h4 { margin: 0 0 10px; color: #fff; }
+    .info-box ul { margin: 0; padding-left: 20px; color: #eee; }
+    
+    footer {
+      text-align: center;
+      font-size: 14px;
+      color: #ccc;
+      margin-top: 20px;
+      user-select: none;
     }
-    .section-divider {
+    footer a { color: #00bcd4; text-decoration: none; font-weight: 600; }
+    footer a:hover { text-decoration: underline; }
+
+    #chatList > div {
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
       background: rgba(255,255,255,0.08);
-      padding: 6px 12px;
+      position: relative;
+    }
+    #chatList > div.unseen {
+      background: rgba(255, 152, 0, 0.35) !important;
+      border: 1px solid #ff9800 !important;
+      box-shadow: 0 0 12px rgba(255, 152, 0, 0.4);
+    }
+    .unseen-badge-chip {
+      background: #e74c3c;
+      color: white;
       font-size: 11px;
       font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #ff9800;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .profile-list {
-      flex: 1;
-      overflow-y: auto;
-    }
-    .profile-item {
-      display: flex;
-      align-items: center;
-      padding: 12px;
-      cursor: pointer;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      transition: 0.2s;
-    }
-    .profile-item:hover, .profile-item.active {
-      background: rgba(255, 255, 255, 0.15);
-    }
-    /* Vibrant highlight styling for incoming unread logs */
-    .profile-item.unseen-item {
-      background: rgba(255, 152, 0, 0.25);
-      border-left: 4px solid #ff9800;
-    }
-    .avatar-wrapper {
-      position: relative;
-      margin-right: 10px;
-      flex-shrink: 0;
-    }
-    .blank-avatar {
-      width: 40px;
-      height: 40px;
-      background: #e0e0e0;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #333;
-    }
-    .status-dot {
-      width: 11px;
-      height: 11px;
-      background: #95a5a6;
-      border-radius: 50%;
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      border: 2px solid #1a3668;
-    }
-    .status-dot.online { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
-    
-    .profile-info { flex: 1; min-width: 0; }
-    .profile-top { display: flex; justify-content: space-between; align-items: center; }
-    .profile-name { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .profile-time { font-size: 10px; color: #ddd; }
-    .profile-preview { font-size: 11px; color: #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
-    
-    .item-controls { display: flex; align-items: center; gap: 6px; margin-left: 5px; }
-    .pin-btn { background: none; border: none; cursor: pointer; font-size: 13px; }
-    .unread-indicator-chip { background: #ff3333; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; }
-
-    /* Workspace Panel Layout */
-    .chat-workspace {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: rgba(255, 255, 255, 0.01);
-      min-width: 0;
-    }
-    .blank-workspace {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: #ddd;
-      font-style: italic;
-      text-align: center;
-      padding: 20px;
-      font-size: 14px;
-    }
-    .workspace-header {
-      padding: 10px 15px;
-      background: rgba(0,0,0,0.3);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .workspace-header h4 { font-size: 14px; font-weight: 600; }
-    .workspace-header p { font-size: 11px; color: #ccc; }
-    .back-btn {
-      display: none;
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      margin-right: 10px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: bold;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
     }
     
     .chatbox {
-      flex: 1; padding: 12px; overflow-y: auto;
-      display: flex; flex-direction: column; gap: 8px;
-      contain: content;
+      display: flex;
+      flex-direction: column;
     }
     .chatbox > div {
-      padding: 8px 12px; border-radius: 12px; color: #000;
-      max-width: 75%; word-wrap: break-word; font-size: 13px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 10px;
+      color: #000;
+      max-width: 70%;
+      word-wrap: break-word;
     }
-    .chatbox > div.fromUser { background: #b2ebf2; align-self: flex-end; border-bottom-right-radius: 2px; }
-    .chatbox > div.fromOther { background: #ffe082; align-self: flex-start; border-bottom-left-radius: 2px; }
-    .chatbox .msg-meta { font-size: 9px; color: #555; margin-top: 3px; text-align: right; font-family: monospace; }
-
-    .workspace-footer {
-      padding: 10px; background: rgba(0,0,0,0.25);
-      display: flex; gap: 8px; align-items: center;
-    }
-    .workspace-footer textarea {
-      flex: 1; padding: 10px 12px; border-radius: 18px; border: none;
-      background: rgba(255,255,255,0.15); color: #fff; height: 36px;
-      resize: none; outline: none; font-size: 13px;
-    }
-    .workspace-footer button {
-      background: #00bcd4; color: #000; border: none; padding: 0 15px;
-      border-radius: 18px; cursor: pointer; font-weight: bold; height: 36px; font-size: 13px;
-    }
-    .context-menu {
-      position: absolute; right: 15px; top: 40px; background: #222;
-      border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); z-index: 100; display: none;
-    }
-    .context-menu button {
-      background: none; border: none; color: #ff5252; padding: 10px 16px;
-      cursor: pointer; width: 100%; text-align: left; font-weight: bold; font-size: 13px;
-    }
-
-    /* Admin Management Control Layouts */
-    #settingsButtons { display: flex; gap: 10px; margin-bottom: 15px; }
-    #settingsButtons button {
-      flex: 1; padding: 8px; font-weight: bold; border-radius: 6px; border: none;
-      cursor: pointer; background: rgba(255,255,255,0.15); color: white; font-size: 12px;
-    }
-    #settingsButtons button.active { background: #ff9800; color: #000; }
-    .settings-section { display: none; width: 100%; }
-    .settings-section.active { display: block; }
-    .settings-section input { width: 100%; padding: 10px; margin: 5px 0 10px; border-radius: 6px; border: none; font-size: 14px; }
-    .settings-section button.submit-btn {
-      background: #2196f3; color: white; border: none; padding: 9px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;
-    }
-    .danger-zone {
-      margin-top: 20px; border: 1px dashed #ff5252; padding: 12px; border-radius: 8px; background: rgba(255,82,82,0.05);
-    }
-    .danger-zone h4 { color: #ff5252; font-size: 14px; margin-bottom: 8px; }
-    .danger-btn {
-      background: #ff5252; color: white; border: none; padding: 8px 12px; border-radius: 6px;
-      cursor: pointer; font-weight: bold; font-size: 12px; margin-right: 8px; margin-top: 6px;
-    }
-    .info-box { background: rgba(255,255,255,0.08); border-left: 4px solid #ff9800; padding: 12px; margin-top: 12px; border-radius: 6px; }
-    .info-box h4 { color: #ff9800; font-size: 13px; margin-bottom: 4px; }
-    .info-box ul { padding-left: 15px; color: #ddd; font-size: 12px; }
+    .chatbox > div.fromUser { background: #b2ebf2; align-self: flex-end; }
+    .chatbox > div.fromOther { background: #ffe082; align-self: flex-start; }
     
-    #installContainer { position: fixed; bottom: 15px; right: 15px; z-index: 999; }
-    #installBtn { background: #e67e22; color: #fff; font-weight: bold; padding: 8px 15px; border-radius: 20px; border: none; cursor: pointer; font-size: 12px; }
+    #settingsButtons { display: flex; gap: 15px; margin-bottom: 20px; }
+    #settingsButtons button {
+      flex: 1; padding: 10px; font-weight: bold; border-radius: 8px; border: none;
+      cursor: pointer; transition: background-color 0.3s ease; background: #ff9800; color: #000;
+    }
+    #settingsButtons button.active { background: #4caf50; color: #fff; }
+    
+    .settings-section { display: none; max-width: 600px; margin: 0 auto; }
+    .settings-section.active { display: block; }
+    .settings-section input { width: 100%; padding: 10px; margin: 6px 0 12px; border-radius: 8px; border: none; box-sizing: border-box; }
+    .settings-section button.submit-btn {
+      background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background-color 0.3s ease;
+    }
+    .settings-section button.submit-btn:hover { background: #1976d2; }
+    
+    /* Clean sweep database wipers layout tool styling rules */
+    .maintenance-wipers-box {
+      margin-top: 25px;
+      padding: 15px;
+      border-radius: 10px;
+      background: rgba(244, 67, 54, 0.1);
+      border: 1px dashed #f44336;
+    }
+    .maintenance-wipers-box h4 { color: #ff8a80; margin-top: 0; margin-bottom: 10px; }
+    .maintenance-wipers-box select, .maintenance-wipers-box input {
+      padding: 8px; border-radius: 6px; border: none; margin-right: 10px; margin-bottom: 10px; font-size: 13px;
+    }
+    .maintenance-wipers-box button {
+      background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;
+    }
 
-    /* MOBILE BREAKPOINT MEDIA PIPELINE OVERRIDES */
-    @media (max-width: 680px) {
+    #status { margin-top: 10px; font-weight: bold; }
+
+    @media (max-width: 600px) {
       body { padding: 10px; }
-      .app-wrapper { margin-top: 45px; height: calc(100vh - 65px); }
-      .top-bar h2 { font-size: 18px; }
-      .tab { height: calc(100% - 95px); padding: 10px; }
-      
-      /* Mobile Layer Overlay Configuration toggle mapping mechanics */
-      .sidebar { width: 100%; }
-      .chat-workspace { display: none; width: 100%; }
-      
-      /* Toggle logic classes driven when active workspace selected */
-      .split-layout.open-chat .sidebar { display: none; }
-      .split-layout.open-chat .chat-workspace { display: flex; }
-      .split-layout.open-chat .back-btn { display: inline-block; }
-      
-      #settingsButtons { flex-direction: column; }
-      .danger-btn { width: 100%; margin-bottom: 6px; }
+      .top-bar h2 { font-size: 1.3rem; }
+      .tab-buttons button { padding: 8px 12px; font-size: 13px; }
+      .msg-segments-nav button { font-size: 12px; padding: 8px; }
+      #replyBox { font-size: 14px; }
     }
   </style>
 </head>
 <body>
 
-<a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer" class="floating-about">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ff5252" width="16px" height="16px" style="vertical-align:middle;">
+<a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer" class="floating-about" aria-label="Visit Mahiur Rahman's Instagram">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f3402f" width="24px" height="24px" style="vertical-align:middle;">
     <path d="M7.75 2A5.75 5.75 0 002 7.75v8.5A5.75 5.75 0 007.75 22h8.5A5.75 5.75 0 0022 16.25v-8.5A5.75 5.75 0 0016.25 2h-8.5zm0 1.5h8.5A4.25 4.25 0 0120.5 7.75v8.5a4.25 4.25 0 01-4.25 4.25h-8.5A4.25 4.25 0 013.5 16.25v-8.5A4.25 4.25 0 017.75 3.5zM12 7a5 5 0 100 10 5 5 0 000-10zm0 1.5a3.5 3.5 0 110 7 3.5 3.5 0 010-7zm4.75-2.5a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0z"/>
   </svg>
-  <span style="margin-left:5px; color:#fff; font-weight:600;">About Me</span>
+  <span style="margin-left:6px; color:#e4405f; font-weight:600; font-family:sans-serif; vertical-align: middle;">About Me</span>
 </a>
 
-<div class="app-wrapper">
-  <div class="top-bar">
-    <h2 id="welcome">Welcome, User</h2>
-    <button onclick="logout()" style="padding: 5px 12px; font-size: 12px; border-radius: 15px; background: #f44336; color: white; border: none; cursor: pointer;">Sign Out</button>
+<div class="top-bar">
+  <h2 id="welcome">Welcome, User</h2>
+  <button onclick="logout()" 
+    style="
+      padding: 4px 12px;
+      font-size: 14px;
+      border-radius: 20px;
+      background: #f44336;
+      color: white;
+      border: none;
+      cursor: pointer;
+      min-width: 80px;
+      height: 30px;
+      line-height: 22px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    ">
+    Sign Out
+  </button>
+</div>
+
+<div class="tab-buttons">
+  <button class="active" onclick="showTab('link', this)">Your Link</button>
+  <button id="messagesBtn" onclick="showTab('messages', this)">Messages</button>
+  <button onclick="showTab('settings', this)">Settings</button>
+</div>
+
+<div id="link" class="tab active">
+  <h3>Your Chat Link</h3>
+  <input type="text" id="shareLink" readonly style="width:100%; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: none; background: rgba(255,255,255,0.9); color: #000;" />
+  <button onclick="copyLink()" style="background:#ff9800; border:none; padding:10px 20px; font-weight:bold; border-radius:8px; cursor:pointer;">Copy Link</button>
+
+  <div class="info-box">
+    <h4>🎯 Add it to your Instagram Profile</h4>
+    <ul>
+      <li>Open your Instagram app.</li>
+      <li>Go to your profile page.</li>
+      <li>Tap “Edit Profile”.</li>
+      <li>Paste your chat link into the “Website” field.</li>
+      <li>Save changes. Now it’s visible on your profile!</li>
+    </ul>
   </div>
 
-  <div class="tab-buttons">
-    <button class="active" onclick="showTab('link', this)">Your Link</button>
-    <button id="messagesBtn" onclick="showTab('messages', this)">Messages <span class="badge" id="notifBadge" style="display:none;">0</span></button>
-    <button onclick="showTab('settings', this)">Settings</button>
+  <div class="info-box">
+    <h4>🎯 Add it to your Instagram Story</h4>
+    <ul>
+      <li>Create a new story.</li>
+      <li>Tap the “Link” sticker.</li>
+      <li>Paste your chat link there.</li>
+      <li>Place the sticker wherever you want on the story.</li>
+      <li>Share your story. Followers can now tap to chat!</li>
+    </ul>
+  </div>
+</div>
+
+<div id="messages" class="tab">
+  <h3>Your Messages</h3>
+
+  <div class="msg-segments-nav">
+    <button id="segChatsBtn" onclick="setInboxDisplaySegment('chats')">💬 Chats</button>
+    <button id="segVisitorsBtn" class="inactive-seg" onclick="setInboxDisplaySegment('visitors')">👀 Recent Visitors</button>
   </div>
 
-  <div id="link" class="tab active">
-    <h3>Your Chat Link</h3>
-    <input type="text" id="shareLink" readonly style="width:100%; padding: 10px; border-radius: 6px; margin: 8px 0; border: none; background: rgba(255,255,255,0.2); color: #fff; font-size: 14px;" />
-    <button onclick="copyLink()" style="padding: 8px 14px; background:#ff9800; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px; color:#000;">Copy Link</button>
+  <div id="chatList"></div>
 
-    <div class="info-box">
-      <h4>🎯 Instagram Profile Placement</h4>
-      <ul>
-        <li>Open Instagram, tap “Edit Profile”, paste link into “Website/Links” parameter.</li>
-      </ul>
-    </div>
-  </div>
-
-  <div id="messages" class="tab" style="padding: 0;">
-    <div class="split-layout" id="layoutContainer">
-      
-      <aside class="sidebar">
-        <div class="profile-list" id="inboxListContainer">
-          </div>
-      </aside>
-
-      <main class="chat-workspace" id="chatWorkspacePanel">
-        <div class="blank-workspace" id="blankWorkspaceState">
-          Select a profile card from the list viewport window to parse history metrics.
-        </div>
-        
-        <div id="activeWorkspaceContent" style="display: none; flex-direction: column; flex: 1; min-height: 0;">
-          <div class="workspace-header">
-            <div style="display: flex; align-items: center;">
-              <button class="back-btn" onclick="closeActiveChatMobileView()">← Back</button>
-              <div>
-                <h4 id="activeChatTitle">Device Identification</h4>
-                <p id="activeChatPresence">Last seen: tracing...</p>
-              </div>
-            </div>
-            <div style="position: relative;">
-              <button onclick="toggleContextDropdown(event)" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer; padding:0 5px;">⋮</button>
-              <div class="context-menu" id="headerContextMenu">
-                <button onclick="deleteCurrentChat()">🗑️ Delete Chat</button>
-              </div>
-            </div>
-          </div>
-          
-          <div class="chatbox" id="mainChatBox"></div>
-          
-          <div class="workspace-footer">
-            <textarea id="mainReplyInput" placeholder="Type your anonymous reply..."></textarea>
-            <button onclick="sendWorkspaceReply()">Send</button>
-          </div>
-        </div>
-      </main>
-
-    </div>
-  </div>
-
-  <div id="settings" class="tab">
-    <h3>Settings</h3>
-    <div id="settingsButtons" style="margin-top:10px;">
-      <button id="btnChangeUsername" class="active" onclick="showSettingsSection('username')">Change Username</button>
-      <button id="btnChangePassword" onclick="showSettingsSection('password')">Change Password</button>
-    </div>
-
-    <div id="sectionUsername" class="settings-section active">
-      <input type="text" id="newUsername" placeholder="New Username" />
-      <input type="password" id="currentPasswordForUsername" placeholder="Current Password" />
-      <button class="submit-btn" onclick="changeUsername()">Change Username</button>
-      <p id="statusUsername" style="margin-top:8px; font-size:13px;"></p>
-    </div>
-
-    <div id="sectionPassword" class="settings-section">
-      <input type="password" id="prevPassword" placeholder="Previous Password" />
-      <input type="password" id="newPassword" placeholder="New Password (min 6 chars, alpha-numeric)" />
-      <input type="password" id="confirmPassword" placeholder="Confirm New Password" />
-      <button class="submit-btn" onclick="changePassword()">Change Password</button>
-      <p id="statusPassword" style="margin-top:8px; font-size:13px;"></p>
-    </div>
-
-    <div class="danger-zone">
-      <h4>⚠️ Maintenance Data Sweepers</h4>
-      <p style="font-size:11px; color:#ccc;">These processing hooks erase database tree logs permanently. Backups are not maintained.</p>
-      <button class="danger-btn" onclick="bulkClearUtility('visitors')">🧹 Clear Empty Visitors</button>
-      <button class="danger-btn" onclick="bulkClearUtility('chats')">💥 Wipe All Active Chats</button>
+  <div id="chatView" style="display:none; margin-top: 20px;">
+    <button onclick="closeChat()" style="margin-bottom: 10px; background:#e74c3c; border:none; color:white; padding:6px 12px; border-radius:6px; cursor:pointer;">✖️ Close Chat</button>
+    <div class="chatbox" id="chatBox" style="background: rgba(255, 255, 255, 0.2); padding: 10px; border-radius: 10px; height: 200px; overflow-y: auto; margin-bottom: 10px; display:flex; flex-direction: column;"></div>
+    <div style="display: flex; gap: 10px;">
+      <textarea id="replyBox" placeholder="Reply..." style="flex: 1; padding: 10px; border-radius: 8px; border: none;"></textarea>
+      <button onclick="sendReplyGlobal()" style="background: #00bcd4; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Send</button>
     </div>
   </div>
 </div>
 
-<div id="installContainer">
-  <button id="installBtn">📥 Install App</button>
+<div id="settings" class="tab">
+  <h3>Settings</h3>
+  <div id="settingsButtons">
+    <button id="btnChangeUsername" class="active" onclick="showSettingsSection('username')">Change Username</button>
+    <button id="btnChangePassword" onclick="showSettingsSection('password')">Change Password</button>
+  </div>
+
+  <div id="sectionUsername" class="settings-section active">
+    <input type="text" id="newUsername" placeholder="New Username" />
+    <input type="password" id="currentPasswordForUsername" placeholder="Current Password" />
+    <button class="submit-btn" onclick="changeUsername()">Change Username</button>
+    <p id="statusUsername" style="color:#fff; margin-top:8px; font-weight:bold;"></p>
+  </div>
+
+  <div id="sectionPassword" class="settings-section">
+    <input type="password" id="prevPassword" placeholder="Previous Password" />
+    <input type="password" id="newPassword" placeholder="New Password (min 6 chars, letters & numbers)" />
+    <input type="password" id="confirmPassword" placeholder="Confirm New Password" />
+    <button class="submit-btn" onclick="changePassword()">Change Password</button>
+    <p id="statusPassword" style="color:#fff; margin-top:8px; font-weight:bold;"></p>
+  </div>
+
+  <div class="maintenance-wipers-box">
+    <h4>⚠️ Maintenance Data Sweepers</h4>
+    <p style="font-size: 12px; color: #ddd; margin-bottom: 12px;">Permanently wipe items from your message workspace tabs. This requires password verification checks before proceeding.</p>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+      <select id="purgeCategorySelect">
+        <option value="visitors">Clear Visited Section (No Messages)</option>
+        <option value="chats">Clear Active Chat History Section</option>
+      </select>
+      <input type="password" id="purgeAdminAuthPassword" placeholder="Enter Account Password" style="margin: 0; padding: 8px; width: 180px; color:#000;" />
+      <button onclick="executeBulkPurgeHandler()">Wipe Section</button>
+    </div>
+    <p id="purgeStatusLogs" style="margin-top: 8px; font-size: 13px; font-weight: bold; color: #ff8a80;"></p>
+  </div>
 </div>
 
 <script>
+  let currentInboxSegment = "chats"; 
   const user = localStorage.getItem("loggedInUser");
   if (!user) window.location.href = "login.html";
  
   document.getElementById("welcome").textContent = "Hi, " + user;
   document.getElementById("shareLink").value = location.origin + "/chat.html?user=" + user;
 
-  let currentActiveDevice = null;
-  let activeChatFirebaseRef = null;
-  let cachedProfilesData = {};
-  let pinnedDevicesArray = JSON.parse(localStorage.getItem("pinnedDashboardDevices") || "[]");
-
-  function pulseAdminPresence() {
+  // Sync state tracking parameters
+  function pulseUserStatusPresence() {
     if (user) firebase.database().ref("users/" + user + "/lastSeen").set(Date.now());
   }
-  pulseAdminPresence();
-  setInterval(pulseAdminPresence, 30000);
+  pulseUserStatusPresence();
+  setInterval(pulseUserStatusPresence, 30000);
 
+  // Tabs navigation
   function showTab(tabId, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
     document.querySelectorAll('.tab-buttons button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    // If returning back to thread tab, force layout size trace checking updates
-    if (tabId === 'messages') { closeActiveChatMobileView(); }
   }
 
+  // Segment Switching Controller Logic
+  function setInboxDisplaySegment(segment) {
+    currentInboxSegment = segment;
+    document.getElementById("segChatsBtn").classList.toggle("inactive-seg", segment !== "chats");
+    document.getElementById("segVisitorsBtn").classList.toggle("inactive-seg", segment !== "visitors");
+    
+    firebase.database().ref("chats/" + user).once("value", snap => {
+      renderChatListDOMNode(snap.val());
+    });
+  }
+
+  // Formatting strings logic helper rules engine for dynamic status logs mapping tags
+  function parseHumanFriendlyTime(timestamp) {
+    if (!timestamp) return "Last Visited: Dynamic tracking check";
+    
+    let dateObj = new Date(timestamp);
+    if (isNaN(dateObj.getTime())) {
+      dateObj = new Date(Date.parse(timestamp));
+      if (isNaN(dateObj.getTime())) return "Last Visited: " + timestamp;
+    }
+
+    const diffMs = Date.now() - dateObj.getTime();
+    if (diffMs < 0) return "Last Visited: Active now";
+
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+
+    if (diffMins < 1) return "Last Visited: Active now";
+    if (diffMins < 60) return `Last Visited: ${diffMins}m ago`;
+    if (diffHours < 24) return `Last Visited: ${diffHours}h ago`;
+
+    const cleanToday = new Date();
+    const todayZero = new Date(cleanToday.getFullYear(), cleanToday.getMonth(), cleanToday.getDate());
+    const targetZero = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+    const daysDiff = Math.round((todayZero - targetZero) / (1000 * 60 * 60 * 24));
+
+    if (daysDiff === 1) return "Last Visited: Yesterday";
+    return `Last Visited: ${daysDiff} days ago`;
+  }
+
+  // Settings configuration views
   function showSettingsSection(section) {
     document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
     document.getElementById('section' + capitalize(section)).classList.add('active');
     document.getElementById('btnChangeUsername').classList.toggle('active', section === 'username');
     document.getElementById('btnChangePassword').classList.toggle('active', section === 'password');
   }
-  function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
-  function logout() { localStorage.removeItem("loggedInUser"); window.location.href = "index.html"; }
-  
+
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function logout() {
+    localStorage.removeItem("loggedInUser");
+    window.location.href = "index.html";
+  }
+
   function copyLink() {
     const input = document.getElementById("shareLink");
     input.select();
     navigator.clipboard.writeText(input.value).then(() => alert("Link copied!"));
   }
 
-  // Active continuous monitoring snapshot pipeline hooks
   const listRef = firebase.database().ref("chats/" + user);
-  listRef.on("value", snapshot => {
-    const data = snapshot.val() || {};
-    let unseenCounter = 0;
-    const incomingKeys = Object.keys(data);
 
-    Object.keys(cachedProfilesData).forEach(id => {
-      if(!incomingKeys.includes(id)) delete cachedProfilesData[id];
+  // Central rendering engine logic template layout parser interface node controller
+  function renderChatListDOMNode(data) {
+    const chatList = document.getElementById("chatList");
+    chatList.innerHTML = "";
+
+    if (!data) {
+      chatList.innerHTML = "<p>No visitor nodes recorded.</p>";
+      return;
+    }
+
+    const mapArrayEntries = Object.entries(data);
+    let renderedElementsCount = 0;
+
+    const sortedEntries = mapArrayEntries.sort((a, b) => {
+      const msgsA = a[1].messages;
+      const msgsB = b[1].messages;
+      const lastTimeA = msgsA ? Object.values(msgsA).slice(-1)[0]?.time : 0;
+      const lastTimeB = msgsB ? Object.values(msgsB).slice(-1)[0]?.time : 0;
+      return new Date(lastTimeB) - new Date(lastTimeA);
     });
 
-    incomingKeys.forEach(deviceId => {
-      const threadNode = data[deviceId] || {};
-      const messagesTree = threadNode.messages || {};
-      const msgKeys = Object.keys(messagesTree);
+    for (let [deviceId, chat] of sortedEntries) {
+      const messages = chat.messages;
+      const messageKeysCount = messages ? Object.keys(messages).length : 0;
 
-      let lastTextSnippet = "";
-      let lastMessageTimeRaw = "";
-      let chronologicalWeight = 0;
+      // Conditional logic to distribute chats correctly between categories
+      if (currentInboxSegment === "chats" && messageKeysCount === 0) continue;
+      if (currentInboxSegment === "visitors" && messageKeysCount > 0) continue;
 
-      if(msgKeys.length > 0) {
-        const lastMsgObj = messagesTree[msgKeys[msgKeys.length - 1]];
-        lastTextSnippet = lastMsgObj.text || "";
-        lastMessageTimeRaw = lastMsgObj.time || "";
-        chronologicalWeight = new Date(lastMessageTimeRaw).getTime() || msgKeys.length;
+      renderedElementsCount++;
+      const seen = chat.seen !== false;
+
+      let explicitLastTime = "";
+      if (messageKeysCount > 0) {
+        explicitLastTime = Object.values(messages).slice(-1)[0]?.time || "";
+      } else {
+        explicitLastTime = chat.visitedTime || deviceId.split('_')[1] || "";
       }
 
-      const isSeen = threadNode.hasOwnProperty("seen") ? threadNode.seen : true;
-      if(!isSeen) unseenCounter++;
+      const humanFriendlyTimeStr = parseHumanFriendlyTime(explicitLastTime);
+      const container = document.createElement("div");
+      container.className = !seen ? "unseen" : "";
+      
+      container.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong style="font-size:16px; color:${!seen ? '#000' : '#fff'};">${deviceId}</strong>
+            ${!seen ? `<span class="unseen-badge-chip">NEW MSG</span>` : ''}
+            <div style="font-size:11px; margin-top:2px; color:${!seen ? '#333' : '#bbb'}; font-weight:bold;">${humanFriendlyTimeStr}</div>
+          </div>
+          <div style="position: relative;">
+            <button onclick="toggleMenu(this)" style="background: none; border: none; font-size: 20px; color: ${!seen ? '#000' : 'white'}; cursor: pointer;">⋮</button>
+            <div class="menu" style="display: none; position: absolute; right: 0; background: #333; border-radius: 6px; padding: 5px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.3); z-index: 999;">
+              <button onclick="deleteChat('${deviceId}')" style="background: none; border: none; color: red; padding: 8px 16px; cursor: pointer; width: 100%; text-align: left;">🗑️ Delete</button>
+            </div>
+          </div>
+        </div>
+        <button onclick="toggleChat('${deviceId}')" style="margin-top:8px;background:#4caf50;color:white;border:none;padding:5px 10px;border-radius:6px;cursor:pointer; font-weight:bold;">Open Conversation</button>
+        
+        <div id="chat-${deviceId}" class="inline-chatbox" style="display:none; margin-top:10px;">
+          <div class="chatbox" id="chatBox-${deviceId}" style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; max-height: 200px; overflow-y: auto; margin-bottom: 10px;"></div>
+          <div style="display: flex; gap: 10px;">
+            <textarea id="replyBox-${deviceId}" placeholder="Reply..." style="flex: 1; padding: 10px; border-radius: 8px; border: none; color:#000; background:#fff;"></textarea>
+            <button onclick="sendReply('${deviceId}')" style="background: #00bcd4; color: #fff; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight:bold;">Send</button>
+          </div>
+        </div>
+      `;
+      chatList.appendChild(container);
+    }
 
-      cachedProfilesData[deviceId] = {
-        id: deviceId,
-        lastText: lastTextSnippet,
-        lastTime: lastMessageTimeRaw,
-        sortTime: chronologicalWeight,
-        unseen: !isSeen
-      };
-    });
+    if (renderedElementsCount === 0) {
+      chatList.innerHTML = `<p style="text-align:center; padding:15px; font-style:italic; color:#ddd;">No items inside this ${currentInboxSegment} display panel box container.</p>`;
+    }
+  }
 
-    updateBadgeElementValue(unseenCounter);
-    processAndSplitRenderSidebarLayout();
+  listRef.on("value", snap => {
+    const data = snap.val();
+    renderChatListDOMNode(data);
   });
 
-  function updateBadgeElementValue(count) {
-    const badge = document.getElementById("notifBadge");
-    if(count > 0) {
-      badge.style.display = "inline-block";
-      badge.textContent = count;
-    } else {
-      badge.style.display = "none";
-    }
+  function toggleMenu(btn) {
+    const menu = btn.parentElement.querySelector(".menu");
+    document.querySelectorAll(".menu").forEach(m => m.style.display = "none");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
   }
 
-  // Dual segmented profiling sorting architecture pipeline processing
-  function processAndSplitRenderSidebarLayout() {
-    const container = document.getElementById("inboxListContainer");
-    if(!container) return;
+  function toggleChat(deviceId) {
+    document.querySelectorAll('.inline-chatbox').forEach(c => c.style.display = "none"); 
+    const thisChat = document.getElementById(`chat-${deviceId}`);
+    thisChat.style.display = "block";
 
-    let allItems = Object.values(cachedProfilesData);
-
-    // Segment items into discrete categorical arrays 
-    let activeChatList = allItems.filter(item => item.lastText !== "");
-    let visitorOnlyList = allItems.filter(item => item.lastText === "");
-
-    // Priority Sort Formula
-    const sortingAlgorithm = (a, b) => {
-      const aPinned = pinnedDevicesArray.includes(a.id);
-      const bPinned = pinnedDevicesArray.includes(b.id);
-      if (aPinned && !bPinned) return -1;
-      if (!aPinned && bPinned) return 1;
-      return b.sortTime - a.sortTime;
-    };
-
-    activeChatList.sort(sortingAlgorithm);
-    visitorOnlyList.sort((a,b) => b.id.localeCompare(a.id)); // Sort visitors alphabetically/by device id index fallback
-
-    container.innerHTML = "";
-
-    // SECTION 1: Active Conversations Array Loop
-    const chatHeaderDiv = document.createElement("div");
-    chatHeaderDiv.className = "section-divider";
-    chatHeaderDiv.textContent = `💬 Active Chats (${activeChatList.length})`;
-    container.appendChild(chatHeaderDiv);
-
-    if (activeChatList.length === 0) {
-      const emptyChats = document.createElement("p");
-      emptyChats.style.cssText = "padding:12px; font-size:12px; color:#bbb; text-align:center;";
-      emptyChats.textContent = "No text logs recorded.";
-      container.appendChild(emptyChats);
-    } else {
-      activeChatList.forEach(p => appendProfileItemToSidebarNode(container, p));
-    }
-
-    // SECTION 2: Empty Visitors Section Array Loop
-    const visitorHeaderDiv = document.createElement("div");
-    visitorHeaderDiv.className = "section-divider";
-    visitorHeaderDiv.textContent = `👀 Recent Visitors (${visitorOnlyList.length})`;
-    container.appendChild(visitorHeaderDiv);
-
-    if (visitorOnlyList.length === 0) {
-      const emptyVis = document.createElement("p");
-      emptyVis.style.cssText = "padding:12px; font-size:12px; color:#bbb; text-align:center;";
-      emptyVis.textContent = "No empty user tracking pulses.";
-      container.appendChild(emptyVis);
-    } else {
-      visitorOnlyList.forEach(v => appendProfileItemToSidebarNode(container, v));
-    }
-  }
-
-  function appendProfileItemToSidebarNode(parentContainer, profile) {
-    const isCurrentlyOpen = (currentActiveDevice === profile.id);
-    const isPinned = pinnedDevicesArray.includes(profile.id);
-    
-    let timeDisplayStr = "";
-    if (profile.lastTime && profile.lastTime.includes(",")) {
-      timeDisplayStr = profile.lastTime.split(",")[1].trim();
-    } else {
-      timeDisplayStr = profile.lastTime || "Checked link";
-    }
-
-    const itemDiv = document.createElement("div");
-    itemDiv.className = `profile-item ${isCurrentlyOpen ? 'active' : ''} ${profile.unseen ? 'unseen-item' : ''}`;
-    itemDiv.setAttribute("onclick", `selectAndLoadActiveChat('${profile.id}')`);
-
-    itemDiv.innerHTML = `
-      <div class="avatar-wrapper">
-        <div class="blank-avatar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        </div>
-        <div class="status-dot" id="dot-${profile.id}"></div>
-      </div>
-      <div class="profile-info">
-        <div class="profile-top">
-          <span class="profile-name" style="${profile.unseen ? 'font-weight:bold; color:#fff;' : ''}">${profile.id}</span>
-          <span class="profile-time">${timeDisplayStr}</span>
-        </div>
-        <div class="profile-preview" style="${profile.unseen ? 'font-weight:bold; color:#fff;' : ''}">${profile.lastText ? escapeHTMLString(profile.lastText) : 'Visited Link (No Message)'}</div>
-      </div>
-      <div class="item-controls">
-        <button class="pin-btn" onclick="toggleDevicePinState(event, '${profile.id}')" style="opacity: ${isPinned ? '1' : '0.3'}">📌</button>
-        ${profile.unseen ? `<span class="unread-indicator-chip">NEW</span>` : ''}
-      </div>
-    `;
-    parentContainer.appendChild(itemDiv);
-    attachPresencePulseTrack(profile.id);
-  }
-
-  function attachPresencePulseTrack(deviceId) {
-    firebase.database().ref("users/" + deviceId + "/lastSeen").once("value", snap => {
-      const val = snap.val();
-      const dot = document.getElementById("dot-" + deviceId);
-      if(!dot) return;
-      if (val && (Date.now() - val < 60000)) {
-        dot.classList.add("online");
-      } else {
-        dot.classList.remove("online");
-      }
-    });
-  }
-
-  function selectAndLoadActiveChat(deviceId) {
-    currentActiveDevice = deviceId;
-    
-    document.getElementById("blankWorkspaceState").style.display = "none";
-    document.getElementById("activeWorkspaceContent").style.display = "flex";
-    document.getElementById("activeChatTitle").textContent = deviceId;
-
-    // Mobile viewport layer trigger assignment 
-    document.getElementById("layoutContainer").classList.add("open-chat");
-
-    firebase.database().ref(`chats/${user}/${deviceId}/seen`).set(true);
-
-    if (activeChatFirebaseRef) activeChatFirebaseRef.off();
-    const chatBox = document.getElementById("mainChatBox");
+    const chatBox = document.getElementById(`chatBox-${deviceId}`);
     chatBox.innerHTML = "";
 
-    activeChatFirebaseRef = firebase.database().ref(`chats/${user}/${deviceId}/messages`);
-    activeChatFirebaseRef.on("child_added", snap => {
+    const msgRef = firebase.database().ref(`chats/${user}/${deviceId}/messages`);
+    msgRef.off();
+    msgRef.on("child_added", snap => {
       const msg = snap.val();
       const div = document.createElement("div");
-      div.className = (msg.from === user) ? "fromUser" : "fromOther";
-      
-      let displayTime = msg.time || "";
-      if(displayTime.includes(",")) displayTime = displayTime.split(",")[1].trim();
-
-      div.innerHTML = `<div>${escapeHTMLString(msg.text)}</div><div class="msg-meta">${displayTime}</div>`;
+      div.style = `background:${msg.from === user ? '#b2ebf2' : '#ffe082'};margin:5px;padding:10px;border-radius:10px;color:#000; align-self: ${msg.from === user ? 'flex-end' : 'flex-start'}; max-width:75%; word-wrap:break-word;`;
+      div.innerHTML = `<strong>${msg.from}</strong> (${msg.time}): <br>${msg.text}`;
       chatBox.appendChild(div);
       chatBox.scrollTop = chatBox.scrollHeight;
     });
 
-    firebase.database().ref("users/" + deviceId + "/lastSeen").on("value", snap => {
-      const val = snap.val();
-      document.getElementById("activeChatPresence").textContent = "Status: " + calculateRelativeTimeAgo(val);
-    });
-
-    processAndSplitRenderSidebarLayout();
+    firebase.database().ref(`chats/${user}/${deviceId}/seen`).set(true);
   }
 
-  function closeActiveChatMobileView() {
-    document.getElementById("layoutContainer").classList.remove("open-chat");
-    currentActiveDevice = null;
-    document.getElementById("activeWorkspaceContent").style.display = "none";
-    document.getElementById("blankWorkspaceState").style.display = "flex";
-  }
-
-  function sendWorkspaceReply() {
-    const input = document.getElementById("mainReplyInput");
-    const msgText = input.value.trim();
-    if (!msgText || !currentActiveDevice) return;
-    
+  function sendReply(deviceId) {
+    const input = document.getElementById(`replyBox-${deviceId}`);
+    const msg = input.value.trim();
+    if (!msg) return;
     const now = new Date().toLocaleString();
-    firebase.database().ref(`chats/${user}/${currentActiveDevice}/messages`).push({
-      from: user, text: msgText, time: now
+    firebase.database().ref(`chats/${user}/${deviceId}/messages`).push({
+      from: user,
+      text: msg,
+      time: now
     });
-    // Set thread seen back to true automatically when replying
-    firebase.database().ref(`chats/${user}/${currentActiveDevice}/seen`).set(true);
     input.value = "";
   }
 
-  document.getElementById("mainReplyInput").addEventListener("keydown", function(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendWorkspaceReply();
-    }
-  });
-
-  function toggleDevicePinState(event, id) {
-    event.stopPropagation();
-    if (pinnedDevicesArray.includes(id)) {
-      pinnedDevicesArray = pinnedDevicesArray.filter(item => item !== id);
-    } else {
-      pinnedDevicesArray.push(id);
-    }
-    localStorage.setItem("pinnedDashboardDevices", JSON.stringify(pinnedDevicesArray));
-    processAndSplitRenderSidebarLayout();
-  }
-
-  function toggleContextDropdown(e) {
-    e.stopPropagation();
-    const menu = document.getElementById("headerContextMenu");
-    menu.style.display = (menu.style.display === "block") ? "none" : "block";
-  }
-
-  function deleteCurrentChat() {
-    if (currentActiveDevice && confirm("Delete this conversation logs node entirely?")) {
-      firebase.database().ref("chats/" + user + "/" + currentActiveDevice).remove();
-      closeActiveChatMobileView();
+  function deleteChat(id) {
+    if (confirm("Delete this chat?")) {
+      firebase.database().ref("chats/" + user + "/" + id).remove();
     }
   }
 
-  // Maintenance sweeping controller module
-  function bulkClearUtility(category) {
-    let confirmationMessage = (category === 'visitors') 
-      ? "Erase all recent empty profile visitors who haven't messaged you?" 
-      : "CRITICAL ACTION:\nWipe out ALL messages and chat data inside your active threads? This cannot be undone.";
+  let activeChat = "";
+  function openChat(id) {
+    activeChat = id;
+    document.getElementById("chatView").style.display = "block";
+    const box = document.getElementById("chatBox");
+    box.innerHTML = "";
+    const msgRef = firebase.database().ref("chats/" + user + "/" + id + "/messages");
+    msgRef.off();
 
-    if (!confirm(confirmationMessage)) return;
-
-    const baseDataRef = firebase.database().ref("chats/" + user);
-    baseDataRef.once("value").then(snapshot => {
-      const data = snapshot.val() || {};
-      let itemsWipedCounter = 0;
-
-      Object.keys(data).forEach(id => {
-        const thread = data[id] || {};
-        const messagesTree = thread.messages || {};
-        const messageKeysCount = Object.keys(messagesTree).length;
-
-        if (category === 'visitors' && messageKeysCount === 0) {
-          baseDataRef.child(id).remove();
-          itemsWipedCounter++;
-        } else if (category === 'chats' && messageKeysCount > 0) {
-          baseDataRef.child(id).remove();
-          itemsWipedCounter++;
-        }
-      });
-
-      alert(`Operation complete. Removed ${itemsWipedCounter} structural elements.`);
-      closeActiveChatMobileView();
+    msgRef.on("child_added", snap => {
+      const msg = snap.val();
+      const div = document.createElement("div");
+      div.className = msg.from === user ? "fromUser" : "fromOther";
+      div.innerHTML = `<strong>${msg.from}</strong> (${msg.time}): <br>${msg.text}`;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
     });
+
+    firebase.database().ref("chats/" + user + "/" + id + "/seen").set(true);
   }
 
-  function calculateRelativeTimeAgo(timestamp) {
-    if(!timestamp) return "Offline";
-    const parsedDate = new Date(timestamp);
-    if(isNaN(parsedDate.getTime())) return "Offline";
-
-    const currentMoment = new Date();
-    const discrepancyMs = currentMoment.getTime() - parsedDate.getTime();
-    if(discrepancyMs < 0) return "Active now";
-
-    const convertedMins = Math.floor(discrepancyMs / 60000);
-    const convertedHrs = Math.floor(convertedMins / 60);
-
-    if(convertedMins < 1) return "Active now";
-    if(convertedMins < 60) return `Active ${convertedMins}m ago`;
-    if(convertedHrs < 24) return `Active ${convertedHrs}h ago`;
-
-    const baselineNow = new Date(currentMoment.getFullYear(), currentMoment.getMonth(), currentMoment.getDate());
-    const baselineThen = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate());
-    const localizedDaysDiff = Math.round((baselineNow - baselineThen) / (1000 * 60 * 60 * 24));
-
-    if(localizedDaysDiff === 1) return "Active yesterday";
-    return `Active ${localizedDaysDiff} days ago`;
+  function closeChat() {
+    document.getElementById("chatView").style.display = "none";
+    activeChat = "";
   }
 
-  function escapeHTMLString(text) {
-    const wrapper = document.createElement('div');
-    wrapper.textContent = text;
-    return wrapper.innerHTML;
+  function sendReplyGlobal() {
+    const msg = document.getElementById("replyBox").value.trim();
+    if (!msg || !activeChat) return;
+    const now = new Date().toLocaleString();
+    firebase.database().ref("chats/" + user + "/" + activeChat + "/messages").push({
+      from: user,
+      text: msg,
+      time: now
+    });
+    document.getElementById("replyBox").value = "";
   }
 
   function changeUsername() {
@@ -789,13 +629,18 @@
 
     const oldRef = firebase.database().ref("users/" + user);
     oldRef.once("value").then(snapshot => {
-      if (!snapshot.exists()) { status.textContent = "❌ User profile lost."; return; }
-      if (snapshot.val().password !== pass) { status.textContent = "❌ Authentication password failed."; return; }
-      
+      if (!snapshot.exists()) {
+        status.textContent = "❌ Current user not found.";
+        return;
+      }
+      if (snapshot.val().password !== pass) {
+        status.textContent = "❌ Incorrect password.";
+        return;
+      }
       const newRef = firebase.database().ref("users/" + newU);
       newRef.once("value").then(snap => {
         if (snap.exists()) {
-          status.textContent = "❌ Username already claimed by another node.";
+          status.textContent = "❌ Username already taken.";
         } else {
           newRef.set({ password: pass, lastSeen: Date.now() }).then(() => {
             firebase.database().ref("chats/" + user).once("value").then(data => {
@@ -803,7 +648,7 @@
                 firebase.database().ref("chats/" + user).remove();
                 oldRef.remove();
                 localStorage.setItem("loggedInUser", newU);
-                alert("Username shifted successfully!");
+                alert("Username updated. Refreshing...");
                 location.reload();
               });
             });
@@ -820,33 +665,139 @@
     const status = document.getElementById("statusPassword");
     status.textContent = "";
 
-    if (!prev || !newP || !confirmP) { status.textContent = "❌ Complete all inputs."; return; }
-    if (newP.length < 6) { status.textContent = "❌ Minimum length constraint (6 characters)."; return; }
-    if (!(/[a-zA-Z]/.test(newP) && /\d/.test(newP))) { status.textContent = "❌ Must be alphanumeric layout."; return; }
-    if (newP !== confirmP) { status.textContent = "❌ Field parity mismatch."; return; }
+    if (!prev || !newP || !confirmP) {
+      status.textContent = "❌ Fill all fields.";
+      return;
+    }
+    if (newP.length < 6) {
+      status.textContent = "❌ Password must be at least 6 characters.";
+      return;
+    }
+    if (!(/[a-zA-Z]/.test(newP) && /\d/.test(newP))) {
+      status.textContent = "❌ Password must include letters and numbers.";
+      return;
+    }
+    if (newP !== confirmP) {
+      status.textContent = "❌ New passwords do not match.";
+      return;
+    }
 
     const userRef = firebase.database().ref("users/" + user);
     userRef.once("value").then(snapshot => {
-      if (!snapshot.exists()) { status.textContent = "❌ Profile missing."; return; }
-      if (snapshot.val().password !== prev) { status.textContent = "❌ Validation parameter failed."; return; }
-      
+      if (!snapshot.exists()) {
+        status.textContent = "❌ User not found.";
+        return;
+      }
+      if (snapshot.val().password !== prev) {
+        status.textContent = "❌ Previous password is incorrect.";
+        return;
+      }
       userRef.update({ password: newP }).then(() => {
         status.style.color = "lightgreen";
-        status.textContent = "✅ Password rewritten successfully.";
+        status.textContent = "✅ Password updated successfully.";
         document.getElementById("prevPassword").value = "";
         document.getElementById("newPassword").value = "";
         document.getElementById("confirmPassword").value = "";
+      }).catch(() => {
+        status.textContent = "❌ Error updating password.";
       });
     });
   }
 
-  document.addEventListener("click", () => {
-    const menu = document.getElementById("headerContextMenu");
-    if(menu) menu.style.display = "none";
+  // Administrative Bulk Maintenance Sweeper Scripting Module Logic with Password Confirm
+  function executeBulkPurgeHandler() {
+    const category = document.getElementById("purgeCategorySelect").value;
+    const inputPassword = document.getElementById("purgeAdminAuthPassword").value.trim();
+    const statusLogger = document.getElementById("purgeStatusLogs");
+    
+    statusLogger.style.color = "#ff8a80";
+    statusLogger.textContent = "";
+
+    if (!inputPassword) {
+      statusLogger.textContent = "❌ Password authorization validation entry required.";
+      return;
+    }
+
+    firebase.database().ref("users/" + user).once("value").then(userSnap => {
+      if (!userSnap.exists()) {
+        statusLogger.textContent = "❌ Account configuration data error.";
+        return;
+      }
+      
+      const realPassword = userSnap.val().password;
+      if (inputPassword !== realPassword) {
+        statusLogger.textContent = "❌ Action aborted: Incorrect account credentials.";
+        return;
+      }
+
+      const targetingTreeRef = firebase.database().ref("chats/" + user);
+      targetingTreeRef.once("value").then(chatSnapshot => {
+        const rootData = chatSnapshot.val();
+        if (!rootData) {
+          statusLogger.textContent = "⚠️ Selected workspace category is completely empty.";
+          return;
+        }
+
+        let totalErasedCount = 0;
+        const targetKeys = Object.keys(rootData);
+
+        targetKeys.forEach(deviceIdKey => {
+          const threadNode = rootData[deviceIdKey] || {};
+          const msgCollection = threadNode.messages || {};
+          const msgKeysCount = Object.keys(msgCollection).length;
+
+          if (category === "visitors" && msgKeysCount === 0) {
+            targetingTreeRef.child(deviceIdKey).remove();
+            totalErasedCount++;
+          } else if (category === "chats" && msgKeysCount > 0) {
+            targetingTreeRef.child(deviceIdKey).remove();
+            totalErasedCount++;
+          }
+        });
+
+        document.getElementById("purgeAdminAuthPassword").value = "";
+        statusLogger.style.color = "lightgreen";
+        statusLogger.textContent = `✅ Success! Flushed ${totalErasedCount} matching node logs out safely.`;
+      });
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.matches(".menu, button[onclick^='toggleMenu']")) {
+      document.querySelectorAll(".menu").forEach(m => m.style.display = "none");
+    }
   });
-  document.getElementById('installBtn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    alert("To install: Tap your browser settings menu layout icon (⋮ or 📤) and select 'Add to Home screen'.");
+</script>
+
+<footer>
+  Developed by Mahiur Rahman.  
+  <a href="https://instagram.com/mistxmahi" target="_blank" rel="noopener noreferrer">About Me</a>
+</footer>
+
+<div id="installContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+  <button id="installBtn">📥 Install App</button>
+  <div id="installInstructions" class="glass-box neon-orange" style="display:none;">
+    <h4>📲 How to Install This App</h4>
+    <ol>
+      <li>Tap the <b>⋮</b> (3-dot menu) in the top-right corner of your browser.</li>
+      <li>Tap <b>"Add to Home screen"</b>.</li>
+      <li>Click on Install. <b>"Anonymous Chatroom"</b>.</li>
+    </ol>
+    <p style="font-size: 14px; color: #eee;">✅ You’ll get an app icon on your home screen!</p>
+  </div>
+</div>
+
+<script>
+  document.getElementById('installBtn').addEventListener('click', () => {
+    const inst = document.getElementById('installInstructions');
+    inst.style.display = inst.style.display === 'none' ? 'block' : 'none';
+  });
+
+  window.addEventListener('load', () => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isStandalone) {
+      document.getElementById('installContainer').style.display = 'none';
+    }
   });
 </script>
 </body>
